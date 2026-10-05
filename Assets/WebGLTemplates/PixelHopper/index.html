@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <style>
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #130a28; overscroll-behavior: none; }
+      body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+      #unity-canvas { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; background: #130a28; image-rendering: pixelated; outline: none; }
+      #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(#2a1458, #130a28); font-family: "Courier New", monospace; color: #fff; z-index: 5; }
+      #loading h1 { margin: 0 0 6vmin; font-size: min(11vw, 9vh); letter-spacing: 0.08em; text-align: center; line-height: 1.05; color: #ffd84a;
+        text-shadow: 0 0.06em 0 #ff8a2a, 0 0.12em 0 #c2410c, 0 0.18em 0 #3b0f52, 0.05em 0 0 #3b0f52, -0.05em 0 0 #3b0f52, 0 -0.05em 0 #3b0f52; }
+      #bar { width: min(70vw, 52vh); height: 3.4vmin; min-height: 18px; border: 0.8vmin solid #fff; border-radius: 6px; background: #1c0f3d; padding: 3px; box-sizing: border-box; box-shadow: 0 0.8vmin 0 #0a0518; }
+      #bar-fill { width: 0%; height: 100%; background: repeating-linear-gradient(90deg, #5bd96a 0 12px, #46b955 12px 16px); transition: width 0.15s linear; }
+      #hint { margin-top: 3vmin; font-size: min(4vw, 3vh); opacity: 0.85; letter-spacing: 0.1em; }
+      #error { display: none; position: fixed; left: 0; right: 0; bottom: 0; padding: 12px; background: #c0392b; color: #fff; font: 14px monospace; z-index: 10; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <canvas id="unity-canvas" tabindex="0"></canvas>
+    <div id="loading">
+      <h1>PIXEL<br>HOPPER</h1>
+      <div id="bar"><div id="bar-fill"></div></div>
+      <div id="hint">LOADING...</div>
+    </div>
+    <div id="error"></div>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loading = document.querySelector("#loading");
+      var fill = document.querySelector("#bar-fill");
+      var hint = document.querySelector("#hint");
+      var errorBox = document.querySelector("#error");
+
+      // Keep Space / arrow keys from scrolling the host page (e.g. inside an itch.io embed).
+      window.addEventListener("keydown", function (e) {
+        if ([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.key) !== -1) e.preventDefault();
+      }, { passive: false });
+      window.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+      window.addEventListener("pointerdown", function () { canvas.focus(); });
+
+      var buildUrl = "Build";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_WASM
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+        showBanner: function (msg, type) {
+          if (type === "error") { errorBox.style.display = "block"; errorBox.textContent = msg; }
+        },
+      };
+
+      var script = document.createElement("script");
+      script.src = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          fill.style.width = (progress * 100) + "%";
+          if (progress >= 0.99) hint.textContent = "STARTING...";
+        }).then(function () {
+          loading.style.display = "none";
+          canvas.focus();
+        }).catch(function (message) {
+          hint.textContent = "COULD NOT START THE GAME";
+          errorBox.style.display = "block";
+          errorBox.textContent = String(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
