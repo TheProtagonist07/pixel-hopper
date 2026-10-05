@@ -112,3 +112,11 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# macOS
+.DS_Store
+
+# Unity auto-recovery and WebGL build staging (generated)
+/Assets/_Recovery/
+/Assets/_Recovery.meta
+/Data/
