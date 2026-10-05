@@ -3,11 +3,34 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-// Renders the game's logo, itch.io cover and app icon from the game's own procedural art.
+/// <summary>
+/// Editor-only tool that creates all of the game's marketing pictures (logo, itch.io cover, app icon, itch page
+/// background, environment banner and the launch screen behind the "Run game" button) from the game's own procedural
+/// art. No image editor is involved: the same code that draws the game also draws the promo images, so they always
+/// match the game, and any of them can be regenerated after an art change with one menu click.
+///
+/// Menu items (Unity menu bar, Tools > Pixel Hopper):
+///   Generate Branding        - logo.png, cover_630x500.png, icon_512.png          (folder: branding/)
+///   Generate Page Art        - page_background_2560x1100.png, banner_environment_1920x420.png   (folder: page/)
+///   Generate Embed Background - embed_cover_1080x1920.png (a 2x export of the 540 x 960 launch screen)  (folder: page/)
+/// They can also be run from an editor script (EditorApplication.ExecuteMenuItem), and each method returns the output folder.
+///
+/// Approach: pictures are composed at the game's native low resolution (for example 315 x 250), one pixel at a time
+/// in a small software canvas (<see cref="Canvas"/>), then enlarged by a whole number with nearest-neighbour scaling so
+/// the pixels stay square and crisp, and saved as PNG.
+///
+/// The whole file is inside UNITY_EDITOR, so it is never part of a build.
+/// </summary>
 public static class CoverArt
 {
+    // Where generated files are written: a folder outside the Unity project, so the (large) images are not
+    // imported into the project or committed to the game repository. Change this path when the folder moves.
     const string OutDir = "/Users/theprotagonist/Claude/ProjectIdeas/IndieGames/pixel-hopper/branding";
 
+    /// <summary>
+    /// A minimal CPU image canvas to compose pictures on. Pixel (0, 0) is the BOTTOM-left, like Unity textures,
+    /// so "y" grows upward and sprites are placed by their bottom-left corner.
+    /// </summary>
     class Canvas
     {
         public readonly int W, H;
@@ -20,6 +43,12 @@ public static class CoverArt
             Px = new Color32[w * h];
         }
 
+        /// <summary>
+        /// Draws pixels onto the canvas with the source's bottom-left corner at (dx, dy), enlarged by a whole
+        /// <paramref name="scale"/>, with alpha blending. Parts outside the canvas are clipped, so images can
+        /// be positioned partly off-screen on purpose (scenery layers are).
+        /// </summary>
+        /// <param name="tint">Optional color that is multiplied with the source (used to give sprites a stage tint or silhouette color).</param>
         public void Blit(Color32[] src, int sw, int sh, int dx, int dy, int scale = 1, Color? tint = null)
         {
             for (int sy = 0; sy < sh * scale; sy++)
@@ -30,8 +59,9 @@ public static class CoverArt
                 {
                     int x = dx + sx;
                     if (x < 0 || x >= W) continue;
+                    // Nearest-neighbour: each source pixel covers a scale x scale block of canvas pixels.
                     Color32 s = src[(sy / scale) * sw + sx / scale];
-                    if (s.a == 0) continue;
+                    if (s.a == 0) continue;   // fully transparent: leave the canvas untouched
                     if (tint.HasValue)
                     {
                         var t = tint.Value;
@@ -39,6 +69,7 @@ public static class CoverArt
                         if (s.a == 0) continue;
                     }
                     if (s.a == 255) { Px[y * W + x] = s; continue; }
+                    // Translucent pixel: normal "over" blend with whatever is already on the canvas.
                     Color32 d = Px[y * W + x];
                     float a = s.a / 255f;
                     Px[y * W + x] = new Color32(
@@ -47,8 +78,10 @@ public static class CoverArt
             }
         }
 
+        /// <summary>Draws a whole texture (see the first Blit for the parameters).</summary>
         public void Blit(Texture2D tex, int dx, int dy, int scale = 1, Color? tint = null) => Blit(tex.GetPixels32(), tex.width, tex.height, dx, dy, scale, tint);
 
+        /// <summary>Draws a sprite (only its region of the atlas texture).</summary>
         public void Blit(Sprite sprite, int dx, int dy, int scale = 1, Color? tint = null)
         {
             Rect r = sprite.textureRect;
@@ -58,6 +91,7 @@ public static class CoverArt
             Blit(px, (int)r.width, (int)r.height, dx, dy, scale, tint);
         }
 
+        /// <summary>Fills the rectangle from (x0, y0) up to but not including (x1, y1) with a solid color.</summary>
         public void FillRect(int x0, int y0, int x1, int y1, Color32 c)
         {
             for (int y = Mathf.Max(0, y0); y < Mathf.Min(H, y1); y++)
@@ -66,6 +100,7 @@ public static class CoverArt
         }
 
         // Blends the bottom rows of the canvas into a solid color so the image melts into a page background.
+        // The blend follows a smooth S-curve; the very bottom row becomes exactly 'solid'.
         public void FadeToSolid(int rows, Color32 solid)
         {
             for (int y = 0; y < rows && y < H; y++)
@@ -80,6 +115,10 @@ public static class CoverArt
             }
         }
 
+        /// <summary>
+        /// Fills the whole canvas with the game's dithered sky gradient (the same texture the game uses),
+        /// stretched to the canvas height: the horizon (bottom color) is at the bottom.
+        /// </summary>
         public void Sky(Color top, Color bottom)
         {
             var sky = Backdrop.MakeSky(top, bottom).GetPixels32();
@@ -90,6 +129,9 @@ public static class CoverArt
             }
         }
 
+        /// <summary>
+        /// Returns the canvas as a texture enlarged by a whole factor (nearest-neighbour, so pixels stay square).
+        /// </summary>
         public Texture2D Upscale(int factor)
         {
             var tex = new Texture2D(W * factor, H * factor, TextureFormat.RGBA32, false);
@@ -103,6 +145,7 @@ public static class CoverArt
         }
     }
 
+    // The same rainbow 3D "PIXEL HOPPER" logo that the title screen shows (one color per letter).
     static Texture2D BuildLogo()
     {
         var colors = new Color[]
@@ -113,16 +156,23 @@ public static class CoverArt
         return PixelFont.RenderLogo(new[] { "PIXEL", "HOPPER" }, colors);
     }
 
+    // Writes a texture as a PNG into the branding folder. A name starting with "../" goes to the sibling "page" folder.
     static void Save(Texture2D tex, string name)
     {
         File.WriteAllBytes(Path.Combine(OutDir, name), tex.EncodeToPNG());
     }
 
+    /// <summary>
+    /// Menu: Tools > Pixel Hopper > Generate Branding.
+    /// Creates the logo with a transparent background, the 630 x 500 itch.io cover (a meadow scene with the hero,
+    /// an enemy, coins and the logo), and the 512 x 512 square icon (hero in front of the sun).
+    /// </summary>
+    /// <returns>The folder the files were written to.</returns>
     [MenuItem("Tools/Pixel Hopper/Generate Branding")]
     public static string Generate()
     {
         Directory.CreateDirectory(OutDir);
-        var theme = Levels.ThemeFor(0);
+        var theme = Levels.ThemeFor(0);   // stage 1's "Sunny Meadow" look is used for the cover and icon
 
         // ---- logo (transparent) ----
         var logo = BuildLogo();
@@ -131,6 +181,7 @@ public static class CoverArt
         Save(logoCanvas.Upscale(2), "logo.png");
 
         // ---- cover 630x500 ----
+        // Composed at 315 x 250 (half size), enlarged 2x at the end. Painter's order: back to front.
         var c = new Canvas(315, 250);
         c.Sky(theme.SkyTop, theme.SkyBottom);
         c.Blit(Backdrop.MakeBody(theme.Body, theme.BodyColor), 196, 150, 2);
@@ -138,6 +189,7 @@ public static class CoverArt
         c.Blit(PixelArt.Cloud, 214, 132);
         c.Blit(Backdrop.MakeLayer(theme.FarShape, theme.FarColor, 6, 512, 352, 5.6f, 2.4f, true), -70, -46);
         c.Blit(Backdrop.MakeLayer(theme.NearShape, theme.NearColor, 7, 512, 256, 4.0f, 1.2f, false), -200, -46);
+        // Ground: one row of grass tiles on top of one row of dirt tiles, every 32 pixels.
         for (int x = 0; x < c.W; x += 32)
         {
             c.Blit(PixelArt.Grass, x, 18);
@@ -152,7 +204,7 @@ public static class CoverArt
         c.Blit(PixelArt.EnemyA, 206, 48, 2);
         c.Blit(PixelArt.CoinFrame(0), 120, 56, 2);
         c.Blit(PixelArt.CoinFrame(1), 158, 74, 2);
-        c.Blit(logo, (c.W - logo.width) / 2, c.H - 6 - logo.height);
+        c.Blit(logo, (c.W - logo.width) / 2, c.H - 6 - logo.height);   // logo centred at the top
         Save(c.Upscale(2), "cover_630x500.png");
 
         // ---- icon 512x512 ----
@@ -175,15 +227,24 @@ public static class CoverArt
         return OutDir;
     }
 
+    /// <summary>
+    /// Menu: Tools > Pixel Hopper > Generate Page Art.
+    /// Creates the two pictures that dress the itch.io page around the game window:
+    ///  - the page background (a purple dusk landscape that fades into the page color at the bottom), and
+    ///  - the environment banner (a left-to-right journey through six of the game's worlds, with no title and no
+    ///    characters, so it contrasts with the game window instead of repeating it).
+    /// </summary>
+    /// <returns>The "page" output folder.</returns>
     [MenuItem("Tools/Pixel Hopper/Generate Page Art")]
     public static string GeneratePageArt()
     {
         Directory.CreateDirectory(OutDir);
         string pageDir = Path.Combine(Path.GetDirectoryName(OutDir), "page");
         Directory.CreateDirectory(pageDir);
-        var solid = new Color32(19, 10, 40, 255);
+        var solid = new Color32(19, 10, 40, 255);   // the page's own background color, which the picture fades into
 
         // ---- page background: dusk landscape that fades into the page color (2560x1100) ----
+        // Composed at 640 x 275 and enlarged 4x.
         var bg = new Canvas(640, 275);
         bg.Sky(new Color(0.06f, 0.03f, 0.2f), new Color(0.98f, 0.5f, 0.38f));
         var stars = Backdrop.MakeStars(7);
@@ -197,9 +258,11 @@ public static class CoverArt
         bg.Blit(PixelArt.Cloud, 120, 160, 1, cloudTint);
         var far = Backdrop.MakeLayer(LayerShape.Mountains, new Color(0.42f, 0.18f, 0.55f), 11, 512, 6 * 32, 2.0f, 1.7f, false);
         var near = Backdrop.MakeLayer(LayerShape.Hills, new Color(0.22f, 0.09f, 0.36f), 12, 512, 4 * 32, 1.5f, 0.55f, false);
+        // Each layer texture is 512 wide but the canvas is 640, so it is drawn twice side by side (they tile seamlessly).
         bg.Blit(far, 0, 50); bg.Blit(far, 512, 50);
         bg.Blit(near, -40, 30); bg.Blit(near, 472, 30);
         bg.FillRect(0, 0, bg.W, 34, new Color32(43, 18, 71, 255));
+        // Dark pine-tree silhouettes at the left and right edges (the Decor "pine" sprite tinted almost black).
         var pine = new Color(0.14f, 0.07f, 0.26f, 1f);
         int[] pineX = { 548, 584, 612, 566, 600 };
         int[] pineScale = { 2, 3, 2, 2, 2 };
@@ -212,9 +275,12 @@ public static class CoverArt
         Save(bg.Upscale(4), "../page/page_background_2560x1100.png");
 
         // ---- environment banner: a journey across the game's worlds, no title or characters (1920x560) ----
+        // Remove an older banner version from a previous design if it is still around.
         string oldBanner = Path.Combine(OutDir, "../page/banner_1920x560.png");
         if (File.Exists(oldBanner)) File.Delete(oldBanner);
 
+        // Six worlds (stage indices) are each rendered as a full-width picture, then the banner takes a vertical
+        // slice from each and dithers between neighbouring slices, so one world melts into the next.
         int[] worlds = { 0, 6, 2, 7, 4, 8 };
         const int bw = 640, bh = 140;
         float segW = bw / (float)worlds.Length;
@@ -231,9 +297,12 @@ public static class CoverArt
         {
             for (int x = 0; x < bw; x++)
             {
+                // c is the position measured in segments: integer values are segment centres.
                 float c = (x + 0.5f) / segW - 0.5f;
                 int i0 = Mathf.FloorToInt(c);
+                // t is 0 until 40% of the way between two segment centres and 1 from 60% on (a smooth 20% blend zone).
                 float t = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.4f, 0.6f, c - i0));
+                // Ordered dithering: pick the next world for pixels whose Bayer threshold is below t, otherwise the current one.
                 float threshold = (bayer[y % 4, x % 4] + 0.5f) / 16f;
                 int pick = Mathf.Clamp(t > threshold ? i0 + 1 : i0, 0, worlds.Length - 1);
                 banner.Px[y * bw + x] = segments[pick].Px[y * bw + x];
@@ -245,6 +314,14 @@ public static class CoverArt
         return pageDir;
     }
 
+    /// <summary>
+    /// Menu: Tools > Pixel Hopper > Generate Embed Background.
+    /// Creates the portrait launch screen that itch.io shows inside the game frame BEFORE the player clicks
+    /// "Run game" (set in itch's Embed options as the cover of the game window). The middle band is left clear for itch's button.
+    /// It is composed at 270 x 480 and exported 4x as 1080 x 1920, which is a sharp 2x version of the 540 x 960 frame.
+    /// Note: this image is only the launch screen. It is not the background that appears at the sides of the running game.
+    /// </summary>
+    /// <returns>The "page" output folder.</returns>
     [MenuItem("Tools/Pixel Hopper/Generate Embed Background")]
     public static string GenerateEmbedBackground()
     {
@@ -264,6 +341,7 @@ public static class CoverArt
         c.Blit(PixelArt.Cloud, 160, 150, 1);
         c.Blit(Backdrop.MakeLayer(theme.FarShape, theme.FarColor, 6, 512, 352, 5.6f, 2.4f, true), -60, -52);
         c.Blit(Backdrop.MakeLayer(theme.NearShape, theme.NearColor, 7, 512, 256, 4.0f, 1.2f, false), -150, -22);
+        // Ground: grass on top of two rows of dirt.
         for (int x = 0; x < c.W; x += 32)
         {
             c.Blit(PixelArt.Grass, x, 48);
@@ -284,6 +362,10 @@ public static class CoverArt
         return pageDir;
     }
 
+    // Paints one "world" of the environment banner onto a canvas: sky, stars or sun/moon, a cloud, two scenery layers,
+    // a row of grass, one piece of theme decoration, and one level element (bricks, spikes or the goal flag) with coins.
+    // x0 and x1 are the horizontal part of the canvas that this world owns (the neighbouring worlds blend in at its edges).
+    // 'index' only varies coin animation frames and alternates the level element; 'lastWorld' puts the flag in the final world.
     static void RenderWorld(Canvas c, StageTheme t, int seed, int x0, int x1, int index, bool lastWorld)
     {
         var rng = new System.Random(seed);
@@ -298,6 +380,7 @@ public static class CoverArt
             c.Blit(Backdrop.MakeBody(t.Body, t.BodyColor), (x0 + x1) / 2 - 24 + rng.Next(-10, 10), 82 + rng.Next(0, 14), 1);
         c.Blit(PixelArt.Cloud, x0 + rng.Next(0, 30), 96 + rng.Next(0, 22), 1, t.CloudTint);
 
+        // Same scenery as in the game, at a random horizontal offset so the six worlds look different.
         bool snow = t.Name == "Frozen Peaks" || t.Name == "Sunny Meadow";
         var far = Backdrop.MakeLayer(t.FarShape, t.FarColor, seed + 1, 512, 352, 5.6f, 2.4f, snow);
         var near = Backdrop.MakeLayer(t.NearShape, t.NearColor, seed + 2, 512, 256, 4.0f, 1.2f, false);

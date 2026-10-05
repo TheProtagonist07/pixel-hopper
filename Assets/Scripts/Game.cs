@@ -3,46 +3,84 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 
+/// <summary>
+/// The game director: the one script that is put in the scene by hand; everything else is created from here in code.
+/// It owns the game state machine (title, help, playing, stage clear, game over, won), the lives and coin counters,
+/// the cameras, the building of each stage from its level grid, and all of the on-screen UI (drawn each frame in
+/// <see cref="DrawUi"/> using <see cref="UiKit"/>).
+///
+/// Flow of a session:
+///  1. Awake: create the sound system. Start: create the cameras, build stage 1 as the title-screen backdrop, hide the player.
+///  2. Title: press Space, tap or click. <see cref="BeginGame"/> starts music and stage 1; the first time ever, the help dialog opens.
+///  3. Playing: PlayerController and the other scripts run themselves. They call back into this class through
+///     <see cref="AddCoin"/>, <see cref="PlayerDied"/> and <see cref="LevelComplete"/>.
+///  4. LevelComplete: 2.6 seconds of celebration, then <see cref="AdvanceStage"/> builds the next stage, or shows the win screen after stage 10.
+///  5. PlayerDied: lose a life and respawn; at zero lives the game is over and a tap retries the CURRENT stage.
+///
+/// Execution order -100 makes this run before every other script, so a stage is built before its objects first update.
+///
+/// Most of the code inside #if UNITY_EDITOR sections only exists in the Unity editor (test bot and debug helpers);
+/// it is not part of the WebGL build.
+/// </summary>
 [DefaultExecutionOrder(-100)]
 public class Game : MonoBehaviour
 {
+    /// <summary>The single Game in the scene (set in Awake) so other scripts can reach the director.</summary>
     public static Game Instance { get; private set; }
+
+    /// <summary>World y below which the player counts as having fallen into a pit.</summary>
     public const float KillY = -4f;
+
+    /// <summary>Title used on the logo and in the UI.</summary>
     public const string GameName = "PIXEL HOPPER";
 
+    // How many world tiles tall the camera view is. 15 tiles on a 9:16 view means the player sees 8.4 tiles
+    // across: a deliberately narrow view that makes stages harder and keeps the art large on phones.
     const float ViewTilesHigh = 15f;
     const float PortraitAspect = 9f / 16f;
     const int LivesPerStage = 3;
-    const float BannerSeconds = 2.2f;
+    const float BannerSeconds = 2.2f;   // how long the "STAGE n" banner stays at the start of a stage
+
+    // PlayerPrefs key remembering that the player pressed SKIP, so the help dialog no longer opens on start.
     const string HelpSkippedKey = "pixelhopper_help_skipped";
 
+    // Title: before the game starts (a stage runs behind the logo). Help: the paused how-to-play dialog.
+    // Playing: normal play. StageClear: celebration before the next stage. GameOver: out of lives. Won: stage 10 finished.
     enum State { Title, Help, Playing, StageClear, GameOver, Won }
 
-    int levelIndex;
+    int levelIndex;                     // zero-based index of the current stage
     int lives = LivesPerStage;
-    int totalCoins;
-    int coinsAtStageStart;
-    int stageCoins;
-    int stageCoinTotal;
+    int totalCoins;                     // coins collected in the whole run so far
+    int coinsAtStageStart;              // total at the start of this stage; a retry after game over restores it
+    int stageCoins;                     // coins collected in this stage (shown on the clear panel)
+    int stageCoinTotal;                 // coins available in this stage
     float levelStartTime;
     float lastCoinTime = -10f;
-    int coinStreak;
+    int coinStreak;                     // coins grabbed in quick succession; raises the pitch of the coin sound
     bool helpSeenThisSession;
-    float advanceAt;
+    float advanceAt;                    // time at which the stage-clear celebration ends
     State state = State.Title;
 
     Camera cam;
     CameraFollow follow;
-    Transform levelRoot;
+    Transform levelRoot;                // parent of everything belonging to the current stage; destroyed to unload it
     PlayerController player;
     Vector3 spawnPoint;
     StageTheme theme;
-    Texture2D logo;
+    Texture2D logo;                     // title logo texture, rendered once on first use
 
+    /// <summary>The player of the current stage.</summary>
     public PlayerController Player => player;
+
+    /// <summary>
+    /// The screen rectangle (in pixels, origin bottom-left as Screen uses it) that the 9:16 game view occupies.
+    /// It is smaller than the window on wide screens, leaving black bars at the sides.
+    /// </summary>
     public Rect ViewRect { get; private set; } = new Rect(0, 0, 9, 16);
 
 #if UNITY_EDITOR
+    // Test-bot controls (see AutoPlayer): AutoPlay makes the game play itself starting at DebugStartStage,
+    // and DebugLog collects one line per stage result and per death.
     public static bool AutoPlay;
     public static int DebugStartStage;
     public static readonly List<string> DebugLog = new List<string>();
@@ -50,6 +88,7 @@ public class Game : MonoBehaviour
 #endif
 
 #if UNITY_EDITOR
+    // Shortcuts used from editor scripts to jump to screens for screenshots.
     public void DebugBegin() => BeginGame();
     public void DebugStage(int index, bool reveal = true) { StartLevel(index); if (!reveal) levelStartTime -= 10f; }
     public void DebugClear() { state = State.StageClear; }
@@ -60,9 +99,12 @@ public class Game : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        // Rays and overlap queries should ignore trigger colliders (coins, spikes, enemy hit boxes) by default;
+        // code that needs them (AutoPlayer) turns this on briefly.
         Physics2D.queriesHitTriggers = false;
         Application.runInBackground = true;
 #if !UNITY_WEBGL
+        // The browser controls the frame rate in WebGL; on desktop we cap at 60.
         Application.targetFrameRate = 60;
 #endif
         if (GetComponent<Sfx>() == null) gameObject.AddComponent<Sfx>();
@@ -72,12 +114,16 @@ public class Game : MonoBehaviour
     {
         SetupCameras();
         UpdateViewport();
+        // The title screen is drawn on top of a real stage (stage 1) so the background is alive and parallax-scrolling.
+        // The player is hidden and frozen until the game starts.
         StartLevel(0);
         player.Freeze();
         player.gameObject.SetActive(false);
         state = State.Title;
     }
 
+    // Two cameras: the main camera draws the game inside a 9:16 rectangle; a second camera that draws nothing
+    // and clears the whole window to black provides the letterbox / pillarbox bars around it.
     void SetupCameras()
     {
         var bars = new GameObject("BarsCamera").AddComponent<Camera>();
@@ -85,31 +131,33 @@ public class Game : MonoBehaviour
         bars.orthographic = true;
         bars.clearFlags = CameraClearFlags.SolidColor;
         bars.backgroundColor = Color.black;
-        bars.cullingMask = 0;
-        bars.depth = -100f;
+        bars.cullingMask = 0;   // renders no objects, only the black clear color
+        bars.depth = -100f;     // drawn first, so the game camera draws over it
         bars.GetUniversalAdditionalCameraData().renderPostProcessing = false;
 
         cam = Camera.main;
         cam.orthographic = true;
-        cam.orthographicSize = ViewTilesHigh / 2f;
+        cam.orthographicSize = ViewTilesHigh / 2f;  // orthographic size is half the visible height in world units
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.allowHDR = false;
-        cam.allowMSAA = false;
+        cam.allowMSAA = false;   // anti-aliasing would blur pixel art
         cam.GetUniversalAdditionalCameraData().renderPostProcessing = false;
 
         follow = cam.GetComponent<CameraFollow>();
         if (follow == null) follow = cam.gameObject.AddComponent<CameraFollow>();
     }
 
+    // Fits the largest 9:16 rectangle into the window, centred, and points the game camera at it.
+    // Called every frame so resizing the window or rotating the phone works immediately.
     void UpdateViewport()
     {
         float sw = Screen.width, sh = Screen.height;
         float w, h;
-        if (sw / sh > PortraitAspect) { h = sh; w = sh * PortraitAspect; }
-        else { w = sw; h = sw / PortraitAspect; }
+        if (sw / sh > PortraitAspect) { h = sh; w = sh * PortraitAspect; }   // window wider than 9:16: pillarbox
+        else { w = sw; h = sw / PortraitAspect; }                             // window taller than 9:16: letterbox
         float x = (sw - w) * 0.5f, y = (sh - h) * 0.5f;
         ViewRect = new Rect(x, y, w, h);
-        if (cam != null) cam.rect = new Rect(x / sw, y / sh, w / sw, h / sh);
+        if (cam != null) cam.rect = new Rect(x / sw, y / sh, w / sw, h / sh);  // camera rect is in 0..1 screen fractions
     }
 
     // ---------- input / state ----------
@@ -121,9 +169,11 @@ public class Game : MonoBehaviour
         var kb = Keyboard.current;
         if (kb != null && kb.mKey.wasPressedThisFrame) Sfx.ToggleMute();
 
+        // After the celebration delay, move on to the next stage.
         if (state == State.StageClear && Time.time >= advanceAt) AdvanceStage();
 
 #if UNITY_EDITOR
+        // Bot mode: start by itself and give up on a stage after 150 seconds (logged as a TIMEOUT).
         if (AutoPlay)
         {
             if (state == State.Title) BeginGame();
@@ -142,18 +192,21 @@ public class Game : MonoBehaviour
             return;
         }
 
+        // H re-opens the help dialog during play (the game is paused while it is open).
         if (state == State.Playing && kb != null && kb.hKey.wasPressedThisFrame)
         {
             OpenHelp();
             return;
         }
 
+        // Title, game-over and win screens all react to the same "confirm" input.
         if (state == State.Title || state == State.GameOver || state == State.Won)
         {
             if (ConfirmPressed(kb)) OnConfirm();
         }
     }
 
+    // True on the frame the player confirms: Space, Enter or R, gamepad A/Start, a mouse click or a screen tap.
     static bool ConfirmPressed(Keyboard kb)
     {
         if (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.rKey.wasPressedThisFrame)) return true;
@@ -164,6 +217,9 @@ public class Game : MonoBehaviour
         return TouchControls.AnyPress();
     }
 
+    // Reads a mouse click or touch press this frame and returns its position in "GUI" coordinates:
+    // pixels with the origin at the TOP-left (the Input System reports bottom-left, so y is flipped).
+    // These match the rectangles that UiKit draws with, so buttons can be hit-tested with Rect.Contains.
     static bool PointerPressed(out Vector2 guiPosition)
     {
         guiPosition = default;
@@ -184,6 +240,8 @@ public class Game : MonoBehaviour
         return false;
     }
 
+    // What "confirm" does in each screen. Game over retries the current stage with the coin total it started with;
+    // winning starts a completely new run.
     void OnConfirm()
     {
         switch (state)
@@ -205,6 +263,8 @@ public class Game : MonoBehaviour
         }
     }
 
+    // Starts a new run from stage 1. The music starts here (the first user interaction), because browsers
+    // do not allow audio to play before the user has interacted with the page.
     void BeginGame()
     {
         totalCoins = 0;
@@ -219,9 +279,11 @@ public class Game : MonoBehaviour
         }
 #endif
         StartLevel(0);
+        // Show the how-to-play dialog unless it was already seen in this session or skipped forever in a past one.
         if (!helpSeenThisSession && PlayerPrefs.GetInt(HelpSkippedKey, 0) == 0) OpenHelp();
     }
 
+    // Pauses the game (time scale 0) and shows the help dialog.
     void OpenHelp()
     {
         state = State.Help;
@@ -229,6 +291,8 @@ public class Game : MonoBehaviour
         if (player != null) player.Freeze();
     }
 
+    // Closes the help dialog and resumes play. 'skipForever' (the SKIP button or Esc) remembers the choice
+    // in PlayerPrefs, which the browser keeps between visits.
     void CloseHelp(bool skipForever)
     {
         if (skipForever)
@@ -240,10 +304,12 @@ public class Game : MonoBehaviour
         Time.timeScale = 1f;
         if (player != null) player.Unfreeze();
         state = State.Playing;
-        levelStartTime = Time.time;
+        levelStartTime = Time.time;   // restart the stage banner timer so it shows after the dialog closes
         Sfx.Play(Clip.Start);
     }
 
+    // Handles input while the help dialog is open: Enter, Space or gamepad A closes it; Esc skips it for good;
+    // clicking or tapping OK or SKIP does the same. The button rectangles come from HelpLayout, shared with the drawing code.
     void UpdateHelp(Keyboard kb)
     {
         HelpLayout(ViewRect, out _, out Rect ok, out Rect skip);
@@ -263,10 +329,14 @@ public class Game : MonoBehaviour
 
     // ---------- level building ----------
 
+    // Unloads the current stage (if any) and builds stage 'index' (zero-based): resets lives and the stage
+    // counters, asks Levels for the grid, and creates all the game objects from it.
     void StartLevel(int index)
     {
         if (levelRoot != null)
         {
+            // Deactivate first: Destroy only takes effect at the end of the frame, and the old objects must not
+            // keep colliding or updating next to the new stage until then.
             levelRoot.gameObject.SetActive(false);
             Destroy(levelRoot.gameObject);
         }
@@ -291,6 +361,9 @@ public class Game : MonoBehaviour
         BuildLevel(grid);
     }
 
+    // Turns the level grid into game objects. Everything is parented under levelRoot (so one Destroy removes the
+    // whole stage), grouped into Tiles (pictures), Solids (invisible colliders), Items and Decor.
+    // Grid coordinates: x to the right, y upward, one cell = one world unit, cell (x, y) centred at (x + 0.5, y + 0.5).
     void BuildLevel(LevelGrid g)
     {
         Backdrop.Create(levelRoot, cam, theme, levelIndex * 13 + 5);
@@ -308,6 +381,7 @@ public class Game : MonoBehaviour
                 switch (g[x, y])
                 {
                     case '#':
+                        // Ground that has more ground above it is dirt; the top layer gets the grass-topped tile.
                         AddTile(tiles, center, g.IsSolid(x, y + 1) ? PixelArt.Dirt : PixelArt.Grass);
                         break;
                     case 'B':
@@ -320,6 +394,7 @@ public class Game : MonoBehaviour
                         NewObject<Hazard>("Spikes", items, center);
                         break;
                     case 'e':
+                        // Enemies and the exit are placed by their feet (the bottom of the cell), not the cell centre.
                         NewObject<Enemy>("Enemy", items, new Vector3(x + 0.5f, y, 0f)).speed = g.EnemySpeed;
                         break;
                 }
@@ -331,6 +406,7 @@ public class Game : MonoBehaviour
 
         NewObject<LevelExit>("Exit", items, new Vector3(g.Exit.x + 0.5f, g.Exit.y, 0f));
 
+        // The player starts slightly above the ground so it never spawns embedded in a tile.
         spawnPoint = new Vector3(g.Start.x + 0.5f, g.Start.y + 0.05f, 0f);
         var playerObject = new GameObject("Player");
         playerObject.transform.SetParent(levelRoot);
@@ -348,6 +424,10 @@ public class Game : MonoBehaviour
         follow.SetTarget(player, new Vector2(g.Width, g.Height));
     }
 
+    // Scatters theme decoration (bushes, flowers, cacti and so on) over the grass.
+    // A decoration is placed on a ground column when: it is at least 3 cells after the previous one, not near the exit,
+    // the cell above the ground is empty, there is no spike, enemy or brick in the three neighbouring columns,
+    // and a 30% random roll succeeds. The random numbers are seeded by the stage number, so every stage always looks the same.
     void PlaceDecor(LevelGrid g, Transform parent)
     {
         if (theme.Decor.Length == 0) return;
@@ -356,7 +436,7 @@ public class Game : MonoBehaviour
         for (int x = 5; x < g.Width - 3; x++)
         {
             if (x - lastX < 3 || Mathf.Abs(x - g.Exit.x) < 3) continue;
-            if (g[x, 2] != '#' || g[x, 3] != '.') continue;
+            if (g[x, 2] != '#' || g[x, 3] != '.') continue;   // ground surface is at row 2; row 3 must be free
             bool clear = true;
             for (int dx = -1; dx <= 1; dx++)
             {
@@ -372,12 +452,13 @@ public class Game : MonoBehaviour
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = PixelArt.Decor(kind);
             sr.color = theme.Tint;
-            sr.sortingOrder = -1;
+            sr.sortingOrder = -1;   // behind the player and tiles
             sr.flipX = rng.NextDouble() < 0.5;
             lastX = x;
         }
     }
 
+    // Creates an empty child of the current stage root.
     Transform NewChild(string name)
     {
         var t = new GameObject(name).transform;
@@ -385,6 +466,8 @@ public class Game : MonoBehaviour
         return t;
     }
 
+    // Creates a child object at a position and adds a component of type T to it
+    // (the component sets up its own look and colliders in Awake).
     T NewObject<T>(string name, Transform parent, Vector3 position) where T : Component
     {
         var go = new GameObject(name);
@@ -393,6 +476,7 @@ public class Game : MonoBehaviour
         return go.AddComponent<T>();
     }
 
+    // Creates one visible tile, tinted with the stage colour.
     void AddTile(Transform parent, Vector3 position, Sprite sprite)
     {
         var go = new GameObject("Tile");
@@ -403,6 +487,12 @@ public class Game : MonoBehaviour
         sr.color = theme.Tint;
     }
 
+    // Builds the collision for all solid cells with as few colliders as possible. A collider per cell would make
+    // the physics slow and, worse, cause the player to catch on the seams between neighbouring tiles.
+    // Algorithm (greedy rectangle merge): scan row by row; each horizontal run of solid cells is looked up in 'open',
+    // the runs from the previous row that have not ended yet. If the identical run (same start and end column)
+    // was open, it is extended upward instead of being a new rectangle. Runs that are not continued in the next row
+    // are finished and become a rectangle. Dictionary key = (first column, last column), value = row where it began.
     void BuildSolids(LevelGrid g, Transform parent)
     {
         var open = new Dictionary<(int, int), int>();
@@ -420,14 +510,15 @@ public class Game : MonoBehaviour
                 var run = (start, x - 1);
                 if (open.TryGetValue(run, out int y0))
                 {
-                    next[run] = y0;
+                    next[run] = y0;      // same run as in the row below: keep growing that rectangle
                     open.Remove(run);
                 }
                 else
                 {
-                    next[run] = y;
+                    next[run] = y;       // a new rectangle starts on this row
                 }
             }
+            // Runs left in 'open' were not repeated on this row, so their rectangles end on the previous row.
             foreach (var kv in open) rects.Add((kv.Key.Item1, kv.Key.Item2, kv.Value, y - 1));
             open = next;
         }
@@ -436,10 +527,12 @@ public class Game : MonoBehaviour
         foreach (var r in rects)
             AddBox(parent, new Vector2((r.x0 + r.x1 + 1) / 2f, (r.y0 + r.y1 + 1) / 2f), new Vector2(r.x1 - r.x0 + 1, r.y1 - r.y0 + 1));
 
+        // Invisible walls just outside both ends of the stage so the player cannot walk off the level.
         AddBox(parent, new Vector2(-0.5f, 20f), new Vector2(1f, 60f));
         AddBox(parent, new Vector2(g.Width + 0.5f, 20f), new Vector2(1f, 60f));
     }
 
+    // Creates an invisible box collider.
     void AddBox(Transform parent, Vector2 center, Vector2 size)
     {
         var go = new GameObject("Solid");
@@ -450,6 +543,11 @@ public class Game : MonoBehaviour
 
     // ---------- gameplay events ----------
 
+    /// <summary>
+    /// Called by a Coin when it is collected. Counts the coin and plays the coin sound.
+    /// Coins collected less than 0.8 seconds apart build a streak (up to 8) that raises the pitch by 6% per step,
+    /// so a row of coins plays a rising scale.
+    /// </summary>
     public void AddCoin()
     {
         totalCoins++;
@@ -459,9 +557,14 @@ public class Game : MonoBehaviour
         Sfx.Play(Clip.Coin, 1f, 1f + 0.06f * coinStreak);
     }
 
+    /// <summary>
+    /// Called by the player (or a hazard) when the player dies. Removes a life and respawns at the stage start;
+    /// with no lives left, the game is over (a retry restarts the same stage with 3 lives).
+    /// In bot mode (editor only) deaths are only logged and the bot respawns for free.
+    /// </summary>
     public void PlayerDied(PlayerController p)
     {
-        if (state != State.Playing) return;
+        if (state != State.Playing) return;   // ignore deaths during overlays (for example while the stage-clear celebration plays)
 #if UNITY_EDITOR
         stageDeaths++;
         if (AutoPlay)
@@ -485,6 +588,10 @@ public class Game : MonoBehaviour
         p.Respawn(spawnPoint);
     }
 
+    /// <summary>
+    /// Called by the exit flag when the player reaches it. Freezes the player, plays the jingle and a gold
+    /// burst, and schedules the move to the next stage 2.6 seconds later (see Update).
+    /// </summary>
     public void LevelComplete()
     {
         if (state != State.Playing) return;
@@ -498,6 +605,7 @@ public class Game : MonoBehaviour
         advanceAt = Time.time + 2.6f;
     }
 
+    // Builds the next stage, or shows the win screen if the last stage was just completed.
     void AdvanceStage()
     {
         if (levelIndex + 1 < Levels.Count)
@@ -518,6 +626,7 @@ public class Game : MonoBehaviour
     static readonly Color Gold = new Color(1f, 0.86f, 0.3f);
     static readonly Color PanelTint = new Color(1f, 1f, 1f, 0.94f);
 
+    // The UI is redrawn every frame, in LateUpdate so it uses the state after all gameplay scripts have run.
     void LateUpdate()
     {
         UiCanvas.Begin();
@@ -525,6 +634,8 @@ public class Game : MonoBehaviour
         UiCanvas.End();
     }
 
+    // Chooses what to draw for the current state. All sizes are relative to the 9:16 view so the layout works
+    // on any screen size: 'u' is 1% of the view height in pixels; 'pk' is the integer scale of panel borders.
     void DrawUi()
     {
         Rect v = ViewRect;
@@ -543,21 +654,27 @@ public class Game : MonoBehaviour
             default:
                 DrawHud(v, u, pk);
                 DrawStateOverlay(v, u, pk);
+                // The on-screen touch buttons are only drawn while playing, and only on touch devices.
                 if (state == State.Playing && TouchControls.Available) DrawTouchButtons(v, u);
                 break;
         }
     }
 
+    // Darkens the whole view so overlay text stands out.
     void Dim(Rect v, float alpha)
     {
         UiKit.Quad(v, new Color(0.04f, 0.02f, 0.1f, alpha));
     }
 
+    // Title screen: the 3D rainbow logo bobbing gently, a tagline, the hero hopping next to an enemy and a row of
+    // bouncing coins, a blinking start prompt and a hint line. The animation uses unscaled time so it keeps moving
+    // even while Time.timeScale is 0.
     void DrawTitle(Rect v, float u)
     {
         Dim(v, 0.22f);
         if (logo == null)
         {
+            // One color per letter of "PIXEL" and "HOPPER" (11 letters): a rainbow that continues across both lines.
             var colors = new[]
             {
                 new Color32(255, 90, 90, 255), new Color32(255, 160, 50, 255), new Color32(255, 220, 60, 255), new Color32(110, 220, 90, 255), new Color32(60, 200, 230, 255),
@@ -568,6 +685,7 @@ public class Game : MonoBehaviour
             logo = PixelFont.RenderLogo(new[] { "PIXEL", "HOPPER" }, tinted);
         }
 
+        // Largest whole-number scale at which the logo fills at most 92% of the view width.
         int scale = Mathf.Max(1, Mathf.FloorToInt(v.width * 0.92f / logo.width));
         float lw = logo.width * scale, lh = logo.height * scale;
         float bob = Mathf.Sin(Time.unscaledTime * 2f) * u * 0.6f;
@@ -576,6 +694,7 @@ public class Game : MonoBehaviour
         int tk = UiKit.K(u, 0.27f);
         UiKit.Text(new Rect(v.x + u * 2f, v.y + v.height * 0.1f + lh + u * 1.5f, v.width - u * 4f, u * 5), "10 STAGES OF PIXEL PLATFORMING", tk, Color.white);
 
+        // Mascots: the hero hops (|sin| gives a bounce) while walking, the enemy waddles, three coins spin and bob.
         float t = Time.unscaledTime;
         float baseY = v.y + v.height * 0.8f + u * 0.2f;
         float spriteScale = Mathf.Max(2f, u * 0.42f);
@@ -585,6 +704,7 @@ public class Game : MonoBehaviour
         for (int i = 0; i < 3; i++)
             UiKit.SpriteAt(new Vector2(v.center.x + (i - 1) * u * 8f, baseY - u * 9f - Mathf.Abs(Mathf.Sin(t * 3f + i * 0.6f)) * u * 1.4f), PixelArt.CoinFrame(Mathf.FloorToInt(t * 7f + i)), spriteScale * 0.9f);
 
+        // The start prompt blinks twice per second and changes wording on touch devices.
         if (Mathf.FloorToInt(t * 2f) % 2 == 0)
         {
             int k = UiKit.K(u, 0.4f);
@@ -593,6 +713,8 @@ public class Game : MonoBehaviour
         UiKit.Text(new Rect(v.x, v.yMax - u * 6f, v.width, u * 4f), "M: SOUND ON/OFF   H: HELP", UiKit.K(u, 0.2f), new Color(1f, 1f, 1f, 0.85f));
     }
 
+    // The top bar shown on every screen except the title: lives (heart) on the left, stage number in the
+    // middle, coin total (spinning coin) on the right-hand side.
     void DrawHud(Rect v, float u, int pk)
     {
         int k = UiKit.K(u, 0.3f);
@@ -608,6 +730,7 @@ public class Game : MonoBehaviour
 
         UiKit.Text(bar, "STAGE " + (levelIndex + 1) + "/" + Levels.Count, k, Color.white);
 
+        // Right-align the coin count and put the coin icon just left of the number.
         string coinText = totalCoins.ToString();
         var coin = PixelArt.CoinFrame(0);
         float coinW = iconH * coin.textureRect.width / coin.textureRect.height;
@@ -617,6 +740,7 @@ public class Game : MonoBehaviour
         UiKit.Sprite(new Rect(right - textW - coinW - u * 0.4f, cy - iconH / 2f, coinW, iconH), PixelArt.CoinFrame(Mathf.FloorToInt(Time.unscaledTime * 7f)));
     }
 
+    // Banner and panels for the playing, stage-clear, game-over and won states.
     void DrawStateOverlay(Rect v, float u, int pk)
     {
         int big = UiKit.K(u, 0.75f), mid = UiKit.K(u, 0.38f), small = UiKit.K(u, 0.27f);
@@ -625,6 +749,7 @@ public class Game : MonoBehaviour
         switch (state)
         {
             case State.Playing:
+                // "STAGE n" plus the theme name for the first 2.2 seconds of a stage.
                 if (Time.time - levelStartTime < BannerSeconds)
                 {
                     UiKit.Text(new Rect(area.x, area.y, area.width, u * 10f), "STAGE " + (levelIndex + 1), big, Gold);
@@ -667,6 +792,8 @@ public class Game : MonoBehaviour
         }
     }
 
+    // Computes the help dialog panel and its two buttons (SKIP on the left, OK on the right).
+    // Shared by DrawHelp (drawing) and UpdateHelp (click hit-testing) so the two can never disagree.
     void HelpLayout(Rect v, out Rect panel, out Rect ok, out Rect skip)
     {
         float u = v.height / 100f;
@@ -677,6 +804,9 @@ public class Game : MonoBehaviour
         ok = new Rect(panel.xMax - u * 4f - bw, by, bw, bh);
     }
 
+    // The how-to-play dialog: six rows (controls, stomp, spikes, coins, flag) and the SKIP / OK! buttons.
+    // Wording changes between touch and keyboard devices. The label text size is reduced until the longest
+    // of the six labels fits the dialog, so every row uses the same size.
     void DrawHelp(Rect v, float u, int pk)
     {
         Dim(v, 0.55f);
@@ -700,6 +830,7 @@ public class Game : MonoBehaviour
         foreach (var s in allLabels) widest = Mathf.Max(widest, UiKit.TextSize(s, 1).x);
         text = Mathf.Clamp(Mathf.FloorToInt((panel.xMax - labelX - u * 1f) / widest), 1, text);
 
+        // Local helpers for one row: a text label, a key-cap button graphic, and an icon sprite.
         void Label(int row, string s)
         {
             UiKit.Text(new Rect(labelX, rowY + row * step, panel.xMax - labelX - u * 1f, keyH), s, text, Color.white, TextAnchor.MiddleLeft);
@@ -735,6 +866,10 @@ public class Game : MonoBehaviour
         UiKit.Button(ok, "OK!", 1, UiKit.K(u, 0.34f), new Color(0.35f, 0.82f, 0.45f), false);
     }
 
+    // Draws the translucent on-screen controls on touch devices: left and right (a quarter of the width each) and
+    // JUMP on the right. The touches themselves are read by TouchControls, whose zones are the left quarter (move left),
+    // the second quarter (move right) and the whole right half (jump); the drawn JUMP button is just a visual
+    // hint inside that half, so tapping anywhere on the right half jumps.
     void DrawTouchButtons(Rect v, float u)
     {
         float h = u * 14f, y = v.yMax - h - u * 3f;

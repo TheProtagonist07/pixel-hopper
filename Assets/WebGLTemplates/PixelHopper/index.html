@@ -1,24 +1,51 @@
 <!DOCTYPE html>
+<!--
+  Pixel Hopper: custom WebGL page template.
+
+  Unity copies this file to the build as index.html when the WebGL template "PROJECT:PixelHopper" is selected
+  (Project Settings > Player > WebGL > Resolution and Presentation). The double-brace macros and the USE_WASM
+  conditional below are Unity template variables: Unity fills them in at build time with the names of the
+  generated files (data, framework, loader, wasm code) and the product settings.
+
+  What this page does, in short:
+    1. Shows a branded loading screen with a progress bar.
+    2. Loads Unity's loader script and starts the game on a full-window canvas.
+    3. Hides the loading screen when the game is running.
+  Design choices: pixel-perfect scaling (the canvas is stretched with image-rendering: pixelated), page scrolling and
+  context menus are disabled so the game feels like an app, and the device pixel ratio is capped at 2 to protect
+  phone performance. Documentation: docs/WEBGL_BUILD_AND_ITCH.md.
+-->
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <!-- Full-screen on phones: no pinch zoom, and use the notch area too (viewport-fit=cover). -->
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>{{{ PRODUCT_NAME }}}</title>
     <style>
+      /* Page fills the window, never scrolls, and uses the game's dark purple so there is no white flash while loading. */
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #130a28; overscroll-behavior: none; }
+      /* touch-action none stops the browser from panning or zooming on touch; the user-select rules stop text selection and the long-press callout. */
       body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+      /* The game canvas covers the whole window. 100dvh is the "dynamic" height that accounts for mobile browser toolbars;
+         the plain 100vh line before it is the fallback for browsers that do not know dvh. The game itself draws the
+         9:16 view inside this canvas and fills the rest with black bars. image-rendering: pixelated keeps pixels sharp. */
       #unity-canvas { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; background: #130a28; image-rendering: pixelated; outline: none; }
+      /* Loading screen: a vertical purple gradient with the title, a progress bar and a hint line, on top of the canvas (z-index 5). */
       #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(#2a1458, #130a28); font-family: "Courier New", monospace; color: #fff; z-index: 5; }
+      /* The title is yellow with a stack of offset orange/dark shadows that fake a chunky 3D extrusion. Sizes use vw/vh/vmin so it scales with the screen. */
       #loading h1 { margin: 0 0 6vmin; font-size: min(11vw, 9vh); letter-spacing: 0.08em; text-align: center; line-height: 1.05; color: #ffd84a;
         text-shadow: 0 0.06em 0 #ff8a2a, 0 0.12em 0 #c2410c, 0 0.18em 0 #3b0f52, 0.05em 0 0 #3b0f52, -0.05em 0 0 #3b0f52, 0 -0.05em 0 #3b0f52; }
+      /* Progress bar frame, and its green striped fill (the width is set from JavaScript as loading progresses). */
       #bar { width: min(70vw, 52vh); height: 3.4vmin; min-height: 18px; border: 0.8vmin solid #fff; border-radius: 6px; background: #1c0f3d; padding: 3px; box-sizing: border-box; box-shadow: 0 0.8vmin 0 #0a0518; }
       #bar-fill { width: 0%; height: 100%; background: repeating-linear-gradient(90deg, #5bd96a 0 12px, #46b955 12px 16px); transition: width 0.15s linear; }
       #hint { margin-top: 3vmin; font-size: min(4vw, 3vh); opacity: 0.85; letter-spacing: 0.1em; }
+      /* Red error strip at the bottom, shown only if the game fails to load or Unity reports an error. */
       #error { display: none; position: fixed; left: 0; right: 0; bottom: 0; padding: 12px; background: #c0392b; color: #fff; font: 14px monospace; z-index: 10; text-align: center; }
     </style>
   </head>
   <body>
+    <!-- tabindex makes the canvas focusable, which is required for it to receive keyboard input. -->
     <canvas id="unity-canvas" tabindex="0"></canvas>
     <div id="loading">
       <h1>PIXEL<br>HOPPER</h1>
@@ -37,9 +64,13 @@
       window.addEventListener("keydown", function (e) {
         if ([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.key) !== -1) e.preventDefault();
       }, { passive: false });
+      // No right-click menu over the game.
       window.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+      // Any click or tap focuses the canvas so keyboard input works. (Known issue KI-004: the very first Space
+      // press can still be missed when the page itself, not the canvas, has focus.)
       window.addEventListener("pointerdown", function () { canvas.focus(); });
 
+      // Unity's configuration object. The build files are in the "Build" folder next to this page.
       var buildUrl = "Build";
       var config = {
         arguments: [],
@@ -52,12 +83,16 @@
         companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
         productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        // Render at the screen's pixel density but never more than 2x: phones report 3x, which would cost speed and add nothing for pixel art.
         devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+        // Unity calls this for warnings and errors; only errors are shown to the player.
         showBanner: function (msg, type) {
           if (type === "error") { errorBox.style.display = "block"; errorBox.textContent = msg; }
         },
       };
 
+      // Load Unity's loader script, then create the game instance on the canvas. The callback receives progress from 0 to 1
+      // while the data and code download and initialise; the bar width and hint text follow it.
       var script = document.createElement("script");
       script.src = buildUrl + "/{{{ LOADER_FILENAME }}}";
       script.onload = function () {
@@ -65,6 +100,7 @@
           fill.style.width = (progress * 100) + "%";
           if (progress >= 0.99) hint.textContent = "STARTING...";
         }).then(function () {
+          // Game is running: remove the loading screen and give the canvas keyboard focus.
           loading.style.display = "none";
           canvas.focus();
         }).catch(function (message) {
