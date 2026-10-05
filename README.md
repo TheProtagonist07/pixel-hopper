@@ -31,15 +31,32 @@ A tiny portrait pixel platformer in 10 stages. Stomp enemies, dodge spikes and p
 | `Assets/Scripts/Sfx.cs` | Procedural chiptune music and sound effects |
 | `Assets/WebGLTemplates/PixelHopper/` | Custom page template for the WebGL build |
 | `Assets/Editor/CoverArt.cs` | Editor tools that render the logo, cover, page art and embed cover |
-| `docs/` | Roadmap, known issues, dev notes, itch page copy |
+| `docs/` | Full documentation (start at [docs/README.md](docs/README.md)) |
+| `tools/verify_comment_only.py` | Proves a comment-only edit did not change any code |
 
-See `docs/DEV_NOTES.md` for how to build and ship.
+Every script starts with a summary comment and explains non-obvious code inline.
 
 ## Docs
-- [CHANGELOG.md](CHANGELOG.md) — what changed in each version
-- [docs/ROADMAP.md](docs/ROADMAP.md) — planned upgrades and the path to mobile stores
-- [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) — open bugs and fixes
-- [docs/DEV_NOTES.md](docs/DEV_NOTES.md) — build, test and release notes
+Start with [docs/README.md](docs/README.md), the index with reading paths.
+
+| Topic | File |
+|---|---|
+| The pitch, numbers and tech stack | [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) |
+| How the pieces fit together (diagrams) | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| What each script does | [docs/SCRIPTS.md](docs/SCRIPTS.md) |
+| Stage generator, difficulty, worlds | [docs/LEVEL_DESIGN.md](docs/LEVEL_DESIGN.md) |
+| Procedural art and backdrops | [docs/ART_PIPELINE.md](docs/ART_PIPELINE.md) |
+| Synthesised sound and music | [docs/AUDIO.md](docs/AUDIO.md) |
+| Pixel font, UI kit, layout, input | [docs/UI_SYSTEM.md](docs/UI_SYSTEM.md) |
+| Test bot, screenshots, checklist | [docs/TESTING.md](docs/TESTING.md) |
+| Web build and itch.io publishing | [docs/WEBGL_BUILD_AND_ITCH.md](docs/WEBGL_BUILD_AND_ITCH.md) |
+| Logo, cover and page art tool | [docs/BRANDING_AND_PAGE_ART.md](docs/BRANDING_AND_PAGE_ART.md) |
+| Why things are built this way | [docs/DECISIONS.md](docs/DECISIONS.md) |
+| Terms explained | [docs/GLOSSARY.md](docs/GLOSSARY.md) |
+| Planned upgrades, store path | [docs/ROADMAP.md](docs/ROADMAP.md) |
+| Open bugs | [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) |
+| Build and release checklist | [docs/DEV_NOTES.md](docs/DEV_NOTES.md) |
+| History of changes | [CHANGELOG.md](CHANGELOG.md) |
 
 ## Credits
 Made with Unity. All art, music and sound effects are generated in code.

@@ -1,6 +1,7 @@
 # Dev notes
 
-Practical notes for building, testing and shipping Pixel Hopper.
+Practical notes for building, testing and shipping Pixel Hopper. This is the short checklist version; the detailed pages are
+[WEBGL_BUILD_AND_ITCH.md](WEBGL_BUILD_AND_ITCH.md), [TESTING.md](TESTING.md) and [BRANDING_AND_PAGE_ART.md](BRANDING_AND_PAGE_ART.md). The full index is [README.md](README.md).
 
 ## Editor tools (Tools > Pixel Hopper)
 Defined in `Assets/Editor/CoverArt.cs`.

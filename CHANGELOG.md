@@ -3,7 +3,10 @@
 All notable changes to Pixel Hopper. Newest first. Update this file with every fix or feature.
 
 ## [Unreleased]
-- (nothing yet)
+### Documentation
+- Added full reference documentation in `docs/` (overview, architecture, scripts, level design, art, audio, UI, testing, WebGL and itch.io, branding, decisions, glossary) with an index at `docs/README.md`
+- Added doc comments and "why" comments to every C# script, the editor branding tool and the WebGL page template (no code changes)
+- Added `tools/verify_comment_only.py` to prove comment-only edits leave the code unchanged
 
 ## [1.0.0] - 2026-10-05
 First public release on itch.io (WebGL).
