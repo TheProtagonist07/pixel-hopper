@@ -20,6 +20,8 @@ lines inline, so this page is the map and the scripts are the detail.
 | [TouchControls.cs](#touchcontrolscs) | 70 | Touch zones for phones |
 | [AutoPlayer.cs](#autoplayercs-editor-only) | 150 | Editor-only test bot, screenshot and video helpers |
 | [Editor/CoverArt.cs](#editorcoverartcs-editor-only) | 420 | Editor-only generator for logo, cover, page art |
+| [Editor/BatchBot.cs](#editorbatchbotcs-editor-only) | 120 | Editor-only: runs the test bot and a stage report from the command line |
+| [Editor/ReleaseBuild.cs](#editorreleasebuildcs-editor-only) | 80 | Editor-only: builds the WebGL release with the correct settings |
 | [WebGLTemplates/PixelHopper/index.html](#webgltemplatespixelhopperindexhtml) | 110 | Web page that hosts the game |
 
 ---
@@ -131,6 +133,16 @@ The whole file is inside `#if UNITY_EDITOR`; it cannot be in a build. Contains `
 ## Editor/CoverArt.cs (editor only)
 Menu tools under Tools > Pixel Hopper that render the logo, itch cover, icon, page background, banner and embed cover from the
 game's own art code. See [BRANDING_AND_PAGE_ART.md](BRANDING_AND_PAGE_ART.md).
+
+## Editor/BatchBot.cs (editor only)
+Two command-line entry points (see [TESTING.md](TESTING.md)). `BatchBot.Run` opens the game scene, turns on `Game.AutoPlay`, enters Play mode with domain reload disabled
+(so static state survives), speeds up time, watches `Game.DebugLog` for `CLEAR` or `TIMEOUT` lines, writes the result and exits with code 0 or 1.
+`BatchBot.Report` prints width, coins, enemies and spikes for every stage without entering Play mode.
+
+## Editor/ReleaseBuild.cs (editor only)
+Applies the WebGL release settings (template, no splash, gzip with decompression fallback, no exceptions, hashed file names, medium stripping) and calls
+`BuildPipeline.BuildPlayer` in the same call. Menu item **Tools > Pixel Hopper > Build WebGL** or `-executeMethod ReleaseBuild.Build -buildOut FOLDER`
+([WEBGL_BUILD_AND_ITCH.md](WEBGL_BUILD_AND_ITCH.md)).
 
 ## WebGLTemplates/PixelHopper/index.html
 Custom page for the web build: loading bar, canvas, keyboard and touch hygiene. Unity fills in file names through template

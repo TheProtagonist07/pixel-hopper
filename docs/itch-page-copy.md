@@ -90,3 +90,9 @@ Attach `promo/pixel-hopper-clip.mp4` (or the GIF).
 - Check the itch dashboard daily for views, browser plays and referrers.
 - Reply to every comment in the first week.
 - Note where players say they got stuck, and tune those stages in an update.
+
+## Update notes (paste on the itch.io page after each upload)
+
+**v1.0.1 (stage 1 gets an enemy)**
+- Stage 1 now has its first enemy: one slow blob to stomp, so you meet it before stage 2.
+- Stage 1 is a tiny bit shorter. Everything else is unchanged.

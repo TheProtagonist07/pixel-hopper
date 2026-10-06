@@ -307,6 +307,12 @@ public static class Levels
             // After 3 hazardous chunks in a row, force a breather (flat ground with coins).
             Kind kind = hazardRun >= 3 ? Kind.Flat : Pick(stage, rng);
 
+            // Stage 1 never unlocks enemies in Pick, so the player would not meet one until stage 2. Make the third
+            // chunk a single slow enemy: by then they have practised jumping, and the help dialog's "stomp enemies"
+            // line finally has something to apply to. Pick is still called first, so the random sequence advances as before,
+            // but replacing a chunk can change what the chunks after it look like (the stage is still deterministic).
+            if (stage == 1 && i == 2) kind = Kind.Enemies;
+
             // Avoid repeating the same hazard twice in a row (up to 3 re-rolls); flat repeats are fine.
             for (int tries = 0; tries < 3 && kind == last && kind != Kind.Flat; tries++)
                 kind = Pick(stage, rng);

@@ -5,7 +5,23 @@ Living plan for Pixel Hopper. Tick items off, move them between sections, and no
 ## Vision
 Start as a free browser game on itch.io, learn from real players, then grow it into a replayable score-chasing game with a community, and test a mobile release. Keep each step small and measure before investing more.
 
-## 1. Next update (v1.0.1) — fixes
+## 0. Release cadence: small updates, one focus each
+The game ships as a series of small updates instead of large bundles. Each update has **one focus point**, a short list of what changed
+for players, and a list of the code changes (see `CHANGELOG.md`). That keeps the itch.io page active, keeps each release easy to test,
+and makes every change a lesson that can be explained on its own. Process: `docs/DEV_NOTES.md`, "Releasing an update".
+
+| Update | Focus | Status |
+|---|---|---|
+| v1.0.1 | Stage 1 gets its first enemy (KI-006) | Done |
+| v1.0.2 | itch embed size and first-keypress focus (KI-002, KI-004) | Next candidate |
+| v1.0.3 | iPhone silent-mode audio (KI-001) | Candidate |
+| v1.1 | Gun pickup and ranged shots (prototype parked on branch `feature/blaster`) | Planned |
+| v1.2 | New enemy types that need the gun (spiky, flying) | Planned |
+| v1.3 | Score, stomp chain and timer | Planned |
+| later | New worlds and stage mechanics, difficulty modes, daily stage, characters | Ideas |
+
+## 1. Fixes
+- [x] Stage 1 gets an enemy (KI-006), v1.0.1
 - [ ] Fix itch embed height (see KI-002)
 - [ ] Fix description typo (KI-003)
 - [ ] iPhone silent-mode audio fix (KI-001), optional

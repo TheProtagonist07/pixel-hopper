@@ -33,6 +33,21 @@ The comments in the file describe each part.
 
 ## Building
 
+**Recommended: one command.** `Assets/Editor/ReleaseBuild.cs` applies all the settings above and builds in the same call
+(this avoids the settings being reset between steps). Close the project in Unity first, then:
+
+```bash
+UNITY=/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity
+$UNITY -batchmode -nographics -projectPath ~/pixel-hopper -executeMethod ReleaseBuild.Build \
+  -buildOut ~/Claude/ProjectIdeas/IndieGames/pixel-hopper/build/v1.0.1 -logFile /tmp/build.log
+cd ~/Claude/ProjectIdeas/IndieGames/pixel-hopper/build/v1.0.1 && zip -r ../pixel-hopper-v1.0.1-itch.zip index.html Build
+```
+
+It takes about two to three minutes. The log line `ReleaseBuild: Succeeded` confirms it. The same build is also in the menu:
+**Tools > Pixel Hopper > Build WebGL** (asks for an output folder).
+
+Manual steps, if you prefer the editor:
+
 1. Switch to WebGL, check the settings above.
 2. Build into a folder (the project used `.../pixel-hopper/build/webgl`). The output is `index.html` and a `Build/` folder with four files
    (`*.loader.js`, `*.framework.js.unityweb`, `*.data.unityweb`, `*.wasm.unityweb`).
