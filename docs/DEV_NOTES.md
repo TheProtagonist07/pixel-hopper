@@ -35,8 +35,11 @@ Gotchas:
 - Page copy lives in `docs/itch-page-copy.md`.
 
 ## Releasing an update
-1. Fix or add the feature, test it (bot + a manual run).
-2. Update `CHANGELOG.md`, `docs/KNOWN_ISSUES.md` and `docs/ROADMAP.md`.
-3. Bump the version in Project Settings.
-4. Build WebGL, zip, upload to the same itch file slot, add a changelog note on the page.
-5. Commit and push.
+Every update has **one focus point**. Work on a branch named `update/<version>-<topic>`.
+1. Make the one change. Keep the diff small and explain it in comments.
+2. Check it: compile, run the bot (`BatchBot.Run`) and, for level changes, the stage report (`BatchBot.Report`) before and after. Commands are in `docs/TESTING.md`.
+3. Update `CHANGELOG.md` with two lists: **What changed** (player-facing) and **Code changes** (file by file). Update `docs/KNOWN_ISSUES.md`, `docs/ROADMAP.md` and any doc that describes the changed code.
+4. Bump the version (Project Settings > Player > Version, field `bundleVersion`).
+5. Build with `ReleaseBuild.Build` (`docs/WEBGL_BUILD_AND_ITCH.md`), zip with `index.html` at the zip root, play it once in a browser.
+6. Commit on the branch, merge into `main`, tag `vX.Y.Z`, push `main` and the tag.
+7. On itch.io upload the zip to the same file slot and paste the update note (text in `docs/itch-page-copy.md`).

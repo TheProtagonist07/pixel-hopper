@@ -30,6 +30,43 @@ In bot mode deaths cost nothing (the bot respawns), and a stage is abandoned aft
 
 **Result at v1.0.0:** all 10 stages completed; stage 10 needed about 6 deaths (see KI-005 in [KNOWN_ISSUES.md](KNOWN_ISSUES.md)).
 
+### Running the bot without the editor window (`BatchBot`)
+
+`Assets/Editor/BatchBot.cs` runs the same bot from the command line, which is how an update is checked quickly and repeatably.
+Close the project in Unity first (a project can only be open in one editor at a time), then:
+
+```bash
+UNITY=/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity
+
+# Play stage 1 (stage index 0) with the bot at 4x speed; writes the result to a file and exits with code 0 (pass) or 1 (fail)
+$UNITY -batchmode -nographics -projectPath ~/pixel-hopper -executeMethod BatchBot.Run \
+  -botStage 0 -botStages 1 -botSpeed 4 -botLimit 600 -botOut /tmp/bot.txt -logFile /tmp/bot.log
+
+# Play all ten stages in a row
+$UNITY -batchmode -nographics -projectPath ~/pixel-hopper -executeMethod BatchBot.Run \
+  -botStage 0 -botStages 10 -botSpeed 4 -botLimit 1800 -botOut /tmp/bot.txt -logFile /tmp/bot.log
+```
+
+| Argument | Meaning | Default |
+|---|---|---|
+| `-botStage` | First stage to play (0 = stage 1) | 0 |
+| `-botStages` | How many stages to play in a row | 1 |
+| `-botSpeed` | `Time.timeScale` while playing (higher = faster, but less like real play) | 4 |
+| `-botLimit` | Real-time seconds before the run is given up as a failure | 600 |
+| `-botOut` | File to write the result lines to | none |
+
+### Stage report (`BatchBot.Report`)
+
+Prints one line per stage: width in tiles and how many coins, enemies and spike tiles it has. It does not enter Play mode, so it takes a few seconds.
+Run it **before and after** any change to `Levels.cs` and compare the two outputs; that shows exactly which stages a change touched.
+
+```bash
+$UNITY -batchmode -nographics -projectPath ~/pixel-hopper -executeMethod BatchBot.Report -botOut /tmp/report.txt -logFile /tmp/report.log
+cat /tmp/report.txt
+```
+
+Example (v1.0.1): `stage  1: width= 67 coins= 24 enemies= 1 spikes= 0 enemySpeed=1.50`.
+
 ## 2. Screenshot and video helpers
 
 Also in `AutoPlayer.cs` (editor only):

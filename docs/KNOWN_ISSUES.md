@@ -11,7 +11,7 @@ Status: **Open**, **Planned** (scheduled), **Fixed (vX.Y.Z)**, **Won't fix**.
 | KI-003 | Description typo: "3 lives per stage , instant retry" (stray space) | Trivial | Open | Edit the itch page text. |
 | KI-004 | First Space press can be ignored until the game canvas has keyboard focus | Low | Open | Players click first; consider showing "Click to focus" hint. |
 | KI-005 | Stage 10 is hard (test bot needed 6 deaths); other stages are fine | Design | Planned | Wait for player feedback, then tune chunk mix or lives. |
-| KI-006 | Enemies at stage 1 are absent by design, so the first stage may feel empty | Design | Planned | Consider a single slow enemy in stage 1. |
+| KI-006 | Enemies at stage 1 are absent by design, so the first stage may feel empty | Design | Fixed (v1.0.1) | Stage 1 now has one slow enemy as its third section (`Levels.Build`). |
 
 ## Player-reported bugs
 Add here as reports come in (itch comments, social). Include device, browser and steps.

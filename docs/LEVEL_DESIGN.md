@@ -33,6 +33,7 @@ Build(stage):
   opening: 11 tiles of ground, start on tile 3, 4 coins to walk through
   repeat (5 + stage) times:
       pick a chunk type unlocked at this stage
+      stage 1 only: chunk 3 is always an enemy chunk (one slow enemy)
       after 3 non-flat chunks in a row, force a flat "breather"
       avoid the same hazard twice in a row (up to 3 re-rolls)
       emit the chunk, advance x
@@ -63,7 +64,7 @@ Legend in the pictures: `#` ground, `_` pit, `^` spikes, `B` brick, `e` enemy, `
 
 | Stage | World | Chunks | Enemy speed (tiles/s) | New in this stage |
 |---|---|---|---|---|
-| 1 | Sunny Meadow | 6 | 1.50 | flat, gap, wall (no enemies by design) |
+| 1 | Sunny Meadow | 6 | 1.50 | flat, gap, wall, plus one guaranteed enemy as chunk 3 (since v1.0.1) |
 | 2 | Cloud Hills | 7 | 1.64 | enemies, spikes |
 | 3 | Sunset Run | 8 | 1.78 | stairs, gaps up to 3 wide, walls up to 2 |
 | 4 | Autumn Trail | 9 | 1.92 | floating platform, 1 to 2 enemies |
@@ -109,7 +110,7 @@ A theme also has a `Tint` multiplied onto ground, brick and scenery so one set o
 | Reshuffle all stages | Change the seed formula `7001 + index * 977` in `Levels.Build` |
 | Make stages longer or shorter | Change `chunks = 5 + stage` |
 | Make enemies faster or slower | Change `EnemySpeed = 1.5f + 0.14f * index` |
-| Put an enemy in stage 1 (KI-006) | Add `Kind.Enemies` to the options in `Pick` for `stage >= 1`, or place one in the opening |
+| Move or remove the stage 1 enemy | Edit the line `if (stage == 1 && i == 2) kind = Kind.Enemies;` in `Levels.Build` (done in v1.0.1 for KI-006) |
 | Add a new world | Add a `StageTheme` to `Themes` and raise `Levels.Count` |
 | Add a new chunk type | Add it to the `Kind` enum, `Pick` (unlock rule) and `Emit` (its layout). Keep it starting and ending on ground. |
 | Add a hand-built stage | Build a `LevelGrid` manually with the `Add...` helpers and return it from `Build` for that index |
