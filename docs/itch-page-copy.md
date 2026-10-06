@@ -93,7 +93,7 @@ Attach `promo/pixel-hopper-clip.mp4` (or the GIF).
 
 ## Update notes (paste on the itch.io page after each upload)
 
-**v1.1.0 (fair play)**
+**v1.1.0 (fair play)** (screenshots to attach: `docs/images/v1.1.0/`, copies in `pixel-hopper/page/update-screenshots/v1.1.0/`)
 - The camera no longer scrolls back: once the screen moves forward, the left edge is a wall, like the classics.
 - Jumping over the top of the flag pole now finishes the stage.
 - New lives rule: 3 lives for the whole run (max 5). Clear a stage to get a heart back, find bonus hearts inside stages 2 to 10, and if you lose them all you start over at stage 1.

@@ -109,6 +109,19 @@ with a stand-in page, no upload needed:
 2. Open the wrapper, click "Run game", wait for the game, and check the change there (loading screen, input, console errors).
 3. Click the game: on the title screen the click starts it.
 
+## 2c. Screenshots for an update post (`ScreenshotTour`)
+
+`Assets/Editor/ScreenshotTour.cs` takes the screenshots for an update post from the real game: it builds each situation (a heart in a stage, the stage clear panel, game over, the hero at the
+left wall), waits for the game to react and captures the frame, UI included. Unlike the other command-line tools it needs a window, so it is started **without** `-batchmode`
+(the editor opens for about a minute, then quits by itself; the project must not already be open):
+
+```bash
+$UNITY -projectPath ~/pixel-hopper -executeMethod ScreenshotTour.Run -shotsOut /tmp/shots -logFile /tmp/shots.log
+python3 tools/crop_shots.py /tmp/shots docs/images/vX.Y.Z --width 720    # removes the black bars, saves 720 x 1280 PNGs
+```
+
+Edit the `Tour` method to photograph different situations. Reference the images from the changelog entry (`docs/images/vX.Y.Z/`) and attach them to the itch.io update post.
+
 ## 3. Manual test checklist
 
 Run before every release, on **desktop browser and a real phone** (the iPhone sound issue was only found this way).
