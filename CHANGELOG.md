@@ -18,11 +18,11 @@ Update 3: **Fair play.** Three bug fixes reported by the owner plus a new lives 
 ### Screenshots
 | | |
 |---|---|
-| ![Title prompt](docs/images/v1.1.0/01_title.png) | ![Bonus heart in stage 2](docs/images/v1.1.0/02_bonus_heart.png) |
+| ![Title prompt](marketing/screenshots/v1.1.0/01_title.png) | ![Bonus heart in stage 2](marketing/screenshots/v1.1.0/02_bonus_heart.png) |
 | New title prompt: "CLICK OR PRESS SPACE TO START" | A bonus heart in a stage 2 rest area (hearts show x2) |
-| ![Heart collected](docs/images/v1.1.0/03_heart_collected.png) | ![Stage clear with heart bonus](docs/images/v1.1.0/04_stage_clear_heart.png) |
+| ![Heart collected](marketing/screenshots/v1.1.0/03_heart_collected.png) | ![Stage clear with heart bonus](marketing/screenshots/v1.1.0/04_stage_clear_heart.png) |
 | Heart collected: hearts go from x2 to x3 | Stage clear panel: "+1 HEART!" |
-| ![Game over](docs/images/v1.1.0/05_game_over.png) | ![Left edge wall](docs/images/v1.1.0/06_left_edge_wall.png) |
+| ![Game over](marketing/screenshots/v1.1.0/05_game_over.png) | ![Left edge wall](marketing/screenshots/v1.1.0/06_left_edge_wall.png) |
 | Game over: "YOU START OVER AT STAGE 1" | The hero stopped by the left edge of the screen |
 
 ### Code changes

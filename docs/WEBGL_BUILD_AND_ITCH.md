@@ -39,8 +39,8 @@ The comments in the file describe each part.
 ```bash
 UNITY=/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity
 $UNITY -batchmode -nographics -projectPath ~/pixel-hopper -executeMethod ReleaseBuild.Build \
-  -buildOut ~/Claude/ProjectIdeas/IndieGames/pixel-hopper/build/v1.0.1 -logFile /tmp/build.log
-cd ~/Claude/ProjectIdeas/IndieGames/pixel-hopper/build/v1.0.1 && zip -r ../pixel-hopper-v1.0.1-itch.zip index.html Build
+  -buildOut ~/pixel-hopper/builds/v1.2.3 -logFile /tmp/build.log
+cd ~/pixel-hopper/builds/v1.2.3 && zip -r ../pixel-hopper-v1.2.3-itch.zip index.html Build   # replace v1.2.3 with the new version
 ```
 
 It takes about two to three minutes. The log line `ReleaseBuild: Succeeded` confirms it. The same build is also in the menu:
@@ -49,13 +49,13 @@ It takes about two to three minutes. The log line `ReleaseBuild: Succeeded` conf
 Manual steps, if you prefer the editor:
 
 1. Switch to WebGL, check the settings above.
-2. Build into a folder (the project used `.../pixel-hopper/build/webgl`). The output is `index.html` and a `Build/` folder with four files
+2. Build into a folder (the project uses `builds/vX.Y.Z`, which is not committed to Git). The output is `index.html` and a `Build/` folder with four files
    (`*.loader.js`, `*.framework.js.unityweb`, `*.data.unityweb`, `*.wasm.unityweb`).
 3. **Check the built `index.html`** really is the custom template (look for the "PIXEL HOPPER" loader). If it is Unity's default page, the template setting did not stick.
 4. Zip `index.html` and `Build/` so that **`index.html` is at the root of the zip**, not inside a folder:
    ```bash
-   cd path/to/build/webgl
-   zip -r ../pixel-hopper-itch.zip index.html Build
+   cd builds/vX.Y.Z
+   zip -r ../pixel-hopper-vX.Y.Z-itch.zip index.html Build
    ```
 5. Test locally before uploading: serve the folder over HTTP (opening the file directly will not work) and play a full run, ideally on a phone too.
 
@@ -87,6 +87,14 @@ right of the running game (those are the black bars the game itself draws, or th
 (exported at 2x, 1080 x 1920) so it fits the frame exactly. See [BRANDING_AND_PAGE_ART.md](BRANDING_AND_PAGE_ART.md).
 
 Page text, tags and descriptions: [itch-page-copy.md](itch-page-copy.md).
+
+## Backing up a build: GitHub Releases
+
+`builds/` is ignored by Git (large and regenerable). To keep an off-machine copy of each shipped build, attach the zip to a GitHub Release of the same tag:
+
+```bash
+gh release create vX.Y.Z builds/pixel-hopper-vX.Y.Z-itch.zip --title "vX.Y.Z" --notes-file release-notes.md
+```
 
 ## Releasing an update
 

@@ -23,9 +23,10 @@ using UnityEngine;
 /// </summary>
 public static class CoverArt
 {
-    // Where generated files are written: a folder outside the Unity project, so the (large) images are not
-    // imported into the project or committed to the game repository. Change this path when the folder moves.
-    const string OutDir = "/Users/theprotagonist/Claude/ProjectIdeas/IndieGames/pixel-hopper/branding";
+    // Where generated files are written: the "marketing" folder at the project root, next to Assets. Unity only imports
+    // Assets, Packages and ProjectSettings, so these images are not imported into the game but are kept (and committed)
+    // with it. Branding images go in marketing/branding; page art goes in the sibling folder marketing/page.
+    static readonly string OutDir = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "marketing", "branding");
 
     /// <summary>
     /// A minimal CPU image canvas to compose pictures on. Pixel (0, 0) is the BOTTOM-left, like Unity textures,

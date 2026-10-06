@@ -31,8 +31,14 @@ A tiny portrait pixel platformer in 10 stages. Stomp enemies, dodge spikes and p
 | `Assets/Scripts/Sfx.cs` | Procedural chiptune music and sound effects |
 | `Assets/WebGLTemplates/PixelHopper/` | Custom page template for the WebGL build |
 | `Assets/Editor/CoverArt.cs` | Editor tools that render the logo, cover, page art and embed cover |
-| `docs/` | Full documentation (start at [docs/README.md](docs/README.md)) |
-| `tools/verify_comment_only.py` | Proves a comment-only edit did not change any code |
+| `docs/` | Engineering documentation (start at [docs/README.md](docs/README.md)) |
+| `marketing/` | Logo, cover, page art, promo clips, update screenshots ([marketing/README.md](marketing/README.md)) |
+| `management/` | How the project is run, release log, status ([management/README.md](management/README.md)) |
+| `sales/` | Traction and store plans, metrics log ([sales/README.md](sales/README.md)) |
+| `builds/` | WebGL builds and itch.io zips per version (not committed; zips are attached to GitHub Releases) |
+| `tools/` | Helper scripts (`verify_comment_only.py`, `crop_shots.py`) |
+
+Everything about the project lives in this one folder and one repository; see [docs/PROJECT_LAYOUT.md](docs/PROJECT_LAYOUT.md).
 
 Every script starts with a summary comment and explains non-obvious code inline.
 

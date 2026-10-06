@@ -17,6 +17,7 @@ and how to change, test, build and ship it. If you only read one thing, read [PR
 | Check that I did not break the game | [TESTING.md](TESTING.md) |
 | Build the web version and publish on itch.io | [WEBGL_BUILD_AND_ITCH.md](WEBGL_BUILD_AND_ITCH.md) |
 | Regenerate the logo, cover and page art | [BRANDING_AND_PAGE_ART.md](BRANDING_AND_PAGE_ART.md) |
+| Find where a file lives, or what is backed up | [PROJECT_LAYOUT.md](PROJECT_LAYOUT.md) |
 | Know why something was done a certain way | [DECISIONS.md](DECISIONS.md) |
 | Look up a term (PPU, parallax, coyote time, 9-slice...) | [GLOSSARY.md](GLOSSARY.md) |
 | See what is planned or broken | [ROADMAP.md](ROADMAP.md), [KNOWN_ISSUES.md](KNOWN_ISSUES.md) |
@@ -37,6 +38,7 @@ and how to change, test, build and ship it. If you only read one thing, read [PR
 | [TESTING.md](TESTING.md) | The test bot, screenshot and video helpers, manual test checklist |
 | [WEBGL_BUILD_AND_ITCH.md](WEBGL_BUILD_AND_ITCH.md) | Build settings, the page template, zip packaging, itch.io page setup |
 | [BRANDING_AND_PAGE_ART.md](BRANDING_AND_PAGE_ART.md) | The CoverArt editor tool and every image it produces |
+| [PROJECT_LAYOUT.md](PROJECT_LAYOUT.md) | Folder map, what is in Git, backups |
 | [DECISIONS.md](DECISIONS.md) | Design decision log: what, why, and what was rejected |
 | [GLOSSARY.md](GLOSSARY.md) | Short definitions of the technical terms used everywhere |
 | [ROADMAP.md](ROADMAP.md) | Planned updates, wish list, mobile store plan |
