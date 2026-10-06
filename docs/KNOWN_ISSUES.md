@@ -7,7 +7,7 @@ Status: **Open**, **Planned** (scheduled), **Fixed (vX.Y.Z)**, **Won't fix**.
 | ID | Issue | Severity | Status | Notes / fix |
 |---|---|---|---|---|
 | KI-001 | No sound on iPhone when the silent switch is on | Low | Open | Not a bug, iOS mutes web audio in silent mode. Optional fix: set `navigator.audioSession.type = 'playback'` in `Assets/WebGLTemplates/PixelHopper/index.html`, rebuild, re-upload. Mention in the itch description meanwhile. |
-| KI-002 | Embed frame (540 x 960) is taller than many laptop screens, so the lower part of the game is below the fold | Medium | Fix ready (v1.0.2) | itch.io page setting: embed viewport **405 x 720** (same 9:16 shape). Not code. Mark Fixed once applied. Laptops with a 768 px screen still need the fullscreen button. |
+| KI-002 | Embed frame (540 x 960) is taller than many laptop screens, so the lower part of the game is below the fold | Low | Accepted | A smaller 405 x 720 frame was tried (v1.0.2) but it cropped the cover image and showed more purple page background, so the viewport stays **540 x 960**. Players on small laptops use the fullscreen button. Revisit if players report it. |
 | KI-003 | Description typo: "3 lives per stage , instant retry" (stray space) | Trivial | Open | Edit the itch page text. |
 | KI-004 | First Space press can be ignored until the game has keyboard focus (itch.io embed) | Low | Fixed (v1.1.0) | The title prompt now says "CLICK OR PRESS SPACE TO START"; a click focuses the game and starts it. (A separate hint box added in v1.0.2 was removed in v1.1.0 because it duplicated the prompt.) |
 | KI-005 | Stage 10 is hard (test bot needed 6 deaths in v1.0.0); other stages are fine | Design | Planned | Bonus hearts added in v1.1.0 help; wait for player feedback, then tune. |

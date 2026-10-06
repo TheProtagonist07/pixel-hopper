@@ -45,7 +45,7 @@ Update 2: **Desktop first run.** Fewer players stuck on a game that "does not re
 
 ### What changed (player-facing)
 - A yellow hint, "CLICK THE GAME TO PLAY", now appears over the game whenever the game does not have keyboard focus, and disappears as soon as the player clicks it. On itch.io the first key press used to go to the page instead of the game, so the game looked frozen; now the player is told what to do. The click that removes the hint also starts the game from the title screen.
-- itch.io page setting (not code, done on the itch.io edit page): set the embed viewport to **405 x 720** instead of 540 x 960. It is the same 9:16 shape but 25% smaller, so it fits on most laptop screens. Players on small laptops can still use the fullscreen button.
+- itch.io page setting (not code): a smaller embed viewport of 405 x 720 was suggested, but the owner tried it and went back to **540 x 960**: the smaller frame cropped the cover image and showed more purple page background. The viewport stays 540 x 960 and players on small laptops use the fullscreen button.
 
 ### Code changes
 - `Assets/WebGLTemplates/PixelHopper/index.html` (the only game file changed): a new `#focus-hint` element with its CSS (centred, pulsing, `pointer-events: none` so clicks pass through to the game), and a few lines of JavaScript, `updateFocusHint()`, which shows the hint while the game is running and `document.hasFocus()` is false. It re-checks on `focus`, `blur`, `visibilitychange`, `pointerdown` and a 500 ms timer (iframes do not always fire focus events).
