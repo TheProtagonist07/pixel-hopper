@@ -13,8 +13,8 @@ and makes every change a lesson that can be explained on its own. Process: `docs
 | Update | Focus | Status |
 |---|---|---|
 | v1.0.1 | Stage 1 gets its first enemy (KI-006) | Done |
-| v1.0.2 | itch embed size and first-keypress focus (KI-002, KI-004) | Next candidate |
-| v1.0.3 | iPhone silent-mode audio (KI-001) | Candidate |
+| v1.0.2 | Desktop first run: focus hint and smaller embed (KI-004, KI-002) | Done |
+| v1.0.3 | iPhone silent-mode audio (KI-001) | Next candidate |
 | v1.1 | Gun pickup and ranged shots (prototype parked on branch `feature/blaster`) | Planned |
 | v1.2 | New enemy types that need the gun (spiky, flying) | Planned |
 | v1.3 | Score, stomp chain and timer | Planned |
@@ -22,7 +22,8 @@ and makes every change a lesson that can be explained on its own. Process: `docs
 
 ## 1. Fixes
 - [x] Stage 1 gets an enemy (KI-006), v1.0.1
-- [ ] Fix itch embed height (see KI-002)
+- [x] Focus hint for the first key press (KI-004), v1.0.2
+- [x] Embed size 405 x 720 on itch.io (KI-002), v1.0.2 (page setting)
 - [ ] Fix description typo (KI-003)
 - [ ] iPhone silent-mode audio fix (KI-001), optional
 - [ ] Triage player-reported bugs (see `docs/KNOWN_ISSUES.md`)

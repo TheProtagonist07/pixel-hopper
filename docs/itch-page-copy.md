@@ -93,6 +93,10 @@ Attach `promo/pixel-hopper-clip.mp4` (or the GIF).
 
 ## Update notes (paste on the itch.io page after each upload)
 
+**v1.0.2 (easier first start)**
+- New hint "CLICK THE GAME TO PLAY" appears when the game does not have keyboard focus yet, so the first key press is never lost.
+- The game frame is now smaller (405 x 720) so it fits on most laptop screens. Use the fullscreen button for the biggest view.
+
 **v1.0.1 (stage 1 gets an enemy)**
 - Stage 1 now has its first enemy: one slow blob to stomp, so you meet it before stage 2.
 - Stage 1 is a tiny bit shorter. Everything else is unchanged.

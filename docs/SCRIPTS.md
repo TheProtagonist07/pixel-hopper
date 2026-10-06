@@ -145,5 +145,5 @@ Applies the WebGL release settings (template, no splash, gzip with decompression
 ([WEBGL_BUILD_AND_ITCH.md](WEBGL_BUILD_AND_ITCH.md)).
 
 ## WebGLTemplates/PixelHopper/index.html
-Custom page for the web build: loading bar, canvas, keyboard and touch hygiene. Unity fills in file names through template
+Custom page for the web build: loading bar, canvas, keyboard and touch hygiene, and a "click the game to play" hint shown while the page lacks keyboard focus. Unity fills in file names through template
 variables. See [WEBGL_BUILD_AND_ITCH.md](WEBGL_BUILD_AND_ITCH.md).

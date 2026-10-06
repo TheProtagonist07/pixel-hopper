@@ -81,6 +81,17 @@ The image has black bars if the game view is wider than 9:16; crop them afterwar
 
 `Game` has shortcuts for reaching specific screens quickly (editor only): `DebugStage(index)`, `DebugClear()`, `DebugOver()`, `DebugWon()`, `DebugBegin()`.
 
+## 2b. Testing the focus hint (and any web template change) without publishing
+
+The itch.io page runs the game in a cross-origin iframe that is created after the player clicks "Run game". A template change can be tested locally
+with a stand-in page, no upload needed:
+
+1. Serve the built game folder on one port and a small wrapper page on another (different ports count as different origins):
+   `cd build/v1.0.2 && python3 -m http.server 8099` and, in another terminal, a wrapper `index.html` with a "Run game" button that creates
+   `<iframe src="http://localhost:8099/index.html">` when clicked.
+2. Open the wrapper, click "Run game", wait for the game, then click the wrapper page outside the game. The yellow hint should appear.
+3. Click the game. The hint should disappear and, on the title screen, the click starts the game.
+
 ## 3. Manual test checklist
 
 Run before every release, on **desktop browser and a real phone** (the iPhone sound issue was only found this way).

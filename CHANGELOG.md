@@ -5,6 +5,21 @@ All notable changes to Pixel Hopper. Newest first. Update this file with every f
 ## [Unreleased]
 - (nothing yet)
 
+## [1.0.2] - 2026-10-06
+Update 2: **Desktop first run.** Fewer players stuck on a game that "does not respond" or does not fit their screen.
+
+### What changed (player-facing)
+- A yellow hint, "CLICK THE GAME TO PLAY", now appears over the game whenever the game does not have keyboard focus, and disappears as soon as the player clicks it. On itch.io the first key press used to go to the page instead of the game, so the game looked frozen; now the player is told what to do. The click that removes the hint also starts the game from the title screen.
+- itch.io page setting (not code, done on the itch.io edit page): set the embed viewport to **405 x 720** instead of 540 x 960. It is the same 9:16 shape but 25% smaller, so it fits on most laptop screens. Players on small laptops can still use the fullscreen button.
+
+### Code changes
+- `Assets/WebGLTemplates/PixelHopper/index.html` (the only game file changed): a new `#focus-hint` element with its CSS (centred, pulsing, `pointer-events: none` so clicks pass through to the game), and a few lines of JavaScript, `updateFocusHint()`, which shows the hint while the game is running and `document.hasFocus()` is false. It re-checks on `focus`, `blur`, `visibilitychange`, `pointerdown` and a 500 ms timer (iframes do not always fire focus events).
+- No C# code changed. `ProjectSettings/ProjectSettings.asset`: version number 1.0.1 to 1.0.2.
+
+### Verified
+- Tested inside a cross-origin iframe on a stand-in "itch page": the game loads, the hint appears when the page outside the game is clicked, and disappears when the game is clicked.
+- The original problem (first Space press ignored) could **not** be reproduced in the test browser, where Space worked at once, so the real itch.io behaviour should be checked after upload (steps in `docs/TESTING.md`).
+
 ## [1.0.1] - 2026-10-06
 Update 1: **Stage 1 gets its first enemy.**
 
