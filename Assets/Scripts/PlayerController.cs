@@ -238,8 +238,17 @@ public class PlayerController : MonoBehaviour
         }
         wasGrounded = grounded;
 
-        // Horizontal movement: accelerate toward the target speed, or brake when there is no input.
+        // Left wall: the camera never scrolls back, so the left edge of the screen blocks the player. Without this, the
+        // player could walk back through ground the camera has already left behind. The margin is half the body width.
         Vector2 v = rb.linearVelocity;
+        float minX = Game.Instance.CameraLeftEdge + col.size.x * 0.5f;
+        if (rb.position.x < minX)
+        {
+            rb.position = new Vector2(minX, rb.position.y);
+            if (v.x < 0f) v.x = 0f;
+        }
+
+        // Horizontal movement: accelerate toward the target speed, or brake when there is no input.
         float target = moveInput * MoveSpeed;
         float rate = Mathf.Abs(target) > 0.01f ? Accel : Decel;
         v.x = Mathf.MoveTowards(v.x, target, rate * Time.fixedDeltaTime);

@@ -26,7 +26,6 @@ Unity copies `Assets/WebGLTemplates/PixelHopper/index.html` to the build and fil
 - Creates the game on a full-window canvas with `image-rendering: pixelated`.
 - Blocks page scrolling (Space and arrow keys), the context menu, text selection, pinch zoom and pull-to-refresh, so it feels like an app.
 - Focuses the canvas on any click or tap so keyboard input works.
-- Shows a yellow "CLICK THE GAME TO PLAY" hint whenever the page does not have keyboard focus (see known issue KI-004), and hides it when the player clicks.
 - Caps the device pixel ratio at 2 (phones report 3, which costs speed for no visible gain with pixel art).
 - Shows a red error strip if Unity reports an error or fails to start.
 
@@ -104,4 +103,4 @@ Page text, tags and descriptions: [itch-page-copy.md](itch-page-copy.md).
 |---|---|
 | No sound on iPhone when the silent switch is on | KI-001. Optional fix: `navigator.audioSession.type = 'playback'` in the template |
 | Embed frame taller than many laptop screens (use viewport 405 x 720) | KI-002 |
-| First Space press ignored until the page has focus (hint added in v1.0.2) | KI-004 |
+| First Space press ignored until the page has focus (title prompt says "CLICK OR PRESS SPACE") | KI-004 |

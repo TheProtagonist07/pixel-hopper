@@ -89,7 +89,7 @@ stateDiagram-v2
     Playing --> GameOver: lives reach 0
     StageClear --> Playing: after 2.6 s, next stage
     StageClear --> Won: after stage 10
-    GameOver --> Playing: confirm, retry the same stage
+    GameOver --> Playing: confirm, new run from stage 1
     Won --> Playing: confirm, restart from stage 1
 ```
 
@@ -97,7 +97,8 @@ Notes:
 
 - `Help` pauses the game with `Time.timeScale = 0`. Anything animated in the UI therefore uses `Time.unscaledTime`.
 - Dying with lives left stays in `Playing`: the player respawns at the stage start with 2 seconds of invulnerability.
-- Game over restores the coin total the stage started with (`coinsAtStageStart`), so retries cannot farm coins.
+- Lives belong to the whole run: 3 at the start, +1 for every cleared stage, bonus hearts inside stages, at most 5. Game over starts a new run at stage 1 with 3 lives and no coins.
+- The camera only scrolls forward and the left edge of the screen is a wall for the player (`Game.CameraLeftEdge`); after a respawn the camera is re-centred (`CameraFollow.Recenter`).
 
 ## How a stage is built
 

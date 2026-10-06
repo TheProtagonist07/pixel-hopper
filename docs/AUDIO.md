@@ -33,7 +33,8 @@ for each sample i:
 | Land | 0.09 s | triangle, 150 to 60 Hz + 30% noise | landing after a fall faster than 6 tiles/s |
 | StageClear | 0.70 s | square arpeggio C-E-G-C (523, 659, 784, 1047 Hz) | stage completed |
 | GameOver | 1.10 s | triangle, four notes down (392, 349, 311, 262 Hz) | out of lives |
-| Start | 0.30 s | square, 660 then 880 Hz | game start, retry, help closed |
+| Start | 0.30 s | square, 660 then 880 Hz | game start, restart, help closed |
+| OneUp | 0.45 s | square, fast rising run (659, 784, 1319, 1175, 1319, 1568 Hz) | a bonus heart is collected |
 
 ## Music
 

@@ -60,6 +60,7 @@ public class StageTheme
 /// Tile legend (one character per cell):
 ///   '.'  empty air          '#'  solid ground (grass on top, dirt below)    'B'  solid brick block
 ///   'c'  coin               '^'  spikes (hurt the player)                   'e'  enemy start position
+///   'h'  bonus heart (one extra life, up to 5)
 /// Start and Exit are stored separately as tile positions.
 /// The generator in <see cref="Levels"/> fills the grid through the Add... helpers below; Game.BuildLevel reads it back.
 /// </summary>
@@ -143,6 +144,9 @@ public class LevelGrid
     /// <summary>Places a horizontal row of coins from x0 to x1 (inclusive) at row y.</summary>
     public void AddCoins(int x0, int x1, int y) { for (int x = x0; x <= x1; x++) Set(x, y, 'c'); }
 
+    /// <summary>Places a bonus heart pickup in a tile.</summary>
+    public void AddHeart(int x, int y) => Set(x, y, 'h');
+
     /// <summary>Places an enemy; (x, y) is the tile the enemy stands in (its feet are at the bottom of that tile).</summary>
     public void AddEnemy(int x, int y) => Set(x, y, 'e');
 
@@ -194,7 +198,7 @@ public static class Levels
     const int Surface = 3;
 
     // The building blocks the generator can place. Each is implemented in Emit.
-    enum Kind { Flat, Gap, StoneGap, Wall, Stairs, Spikes, Enemies, Platform, SpikeRun, Gauntlet, GapLanding }
+    enum Kind { Flat, Gap, StoneGap, Wall, Stairs, Spikes, Enemies, Platform, SpikeRun, Gauntlet, GapLanding, HeartRest }
 
     static Color Rgb(int r, int g, int b) => new Color32((byte)r, (byte)g, (byte)b, 255);
 
@@ -312,6 +316,12 @@ public static class Levels
             // line finally has something to apply to. Pick is still called first, so the random sequence advances as before,
             // but replacing a chunk can change what the chunks after it look like (the stage is still deterministic).
             if (stage == 1 && i == 2) kind = Kind.Enemies;
+
+            // Bonus hearts: from stage 2 a heart rest area is added in the middle of the stage, and from stage 6 a second one
+            // three quarters of the way through. It is an extra chunk that uses no random numbers, so every other chunk in
+            // the stage stays exactly as it was.
+            if (stage >= 2 && i == chunks / 2) x = Emit(g, Kind.HeartRest, x, stage, rng);
+            if (stage >= 6 && i == chunks * 3 / 4) x = Emit(g, Kind.HeartRest, x, stage, rng);
 
             // Avoid repeating the same hazard twice in a row (up to 3 re-rolls); flat repeats are fine.
             for (int tries = 0; tries < 3 && kind == last && kind != Kind.Flat; tries++)
@@ -491,6 +501,17 @@ public static class Levels
                 g.AddCoins(x + 3, x + 4, Surface + 3);
                 g.AddCoins(x + 10, x + 11, Surface + 3);
                 return x + 15;
+            }
+
+            // HEART REST: 9 flat tiles with coins and a bonus heart in the middle (a safe breather with a reward).
+            // Unlike the other chunks it is never picked at random, the generator inserts it at fixed points.
+            case Kind.HeartRest:
+            {
+                g.AddGround(x, x + 8);
+                g.AddCoins(x + 1, x + 2, Surface);
+                g.AddHeart(x + 4, Surface);
+                g.AddCoins(x + 6, x + 7, Surface);
+                return x + 9;
             }
 
             // GAP LANDING (stage 6+): ###___########e a 3-wide pit followed by 8 flat tiles with an enemy waiting

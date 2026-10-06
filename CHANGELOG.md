@@ -5,6 +5,31 @@ All notable changes to Pixel Hopper. Newest first. Update this file with every f
 ## [Unreleased]
 - (nothing yet)
 
+## [1.1.0] - 2026-10-06
+Update 3: **Fair play.** Three bug fixes reported by the owner plus a new lives rule and bonus hearts.
+
+### What changed (player-facing)
+- **Removed the "CLICK THE GAME TO PLAY" box added in 1.0.2.** It duplicated the prompt on the title screen. The title prompt itself now reads "CLICK OR PRESS SPACE TO START", so a click both focuses the game and starts it.
+- **The camera no longer scrolls back.** Once the screen has moved forward it stays there, and the left edge of the screen blocks the player, like classic platformers. The player can still walk back a few tiles inside the screen, but not into ground that has been left behind. After losing a life the camera returns to the start with the player.
+- **Jumping over the flag pole now finishes the stage.** The goal is a full-height line instead of a 3-tile trigger, so no jump can clear it.
+- **New lives rule.** Lives belong to the whole run: you start with 3, they do not refill between stages, and the maximum is 5. Clearing a stage gives back 1 heart ("+1 HEART!" on the clear panel). When the lives run out it is game over and the next run starts again at stage 1 with 3 lives and no coins (before, game over retried the same stage and every stage started with 3 lives).
+- **Bonus hearts inside stages.** From stage 2 there is a rest area with a heart in the middle of the stage; from stage 6 there is a second one later on. Touching a heart gives 1 life (up to 5). At 5 lives the heart is left where it is. Stages 2 to 10 are about 9 to 18 tiles longer because of the rest areas; their enemies and spikes did not change.
+
+### Code changes
+- `Assets/Scripts/Game.cs`: lives are now per run (`StartingLives = 3`, `MaxLives = 5`); `lives` is no longer reset in `StartLevel`; game over restarts at stage 1; `LevelComplete` awards a heart; new `AddLife()` and `CameraLeftEdge`; `PlayerDied` re-centres the camera after a respawn; new heart tile `h` in `BuildLevel`; UI text (title prompt, clear panel, game over panel). The `coinsAtStageStart` field was removed because retrying a stage no longer exists.
+- `Assets/Scripts/CameraFollow.cs`: one-way camera (`maxX` ratchet in `LateUpdate`), `LeftEdge` property and `Recenter()`.
+- `Assets/Scripts/PlayerController.cs`: in `FixedUpdate`, the player is stopped at the left edge of the screen.
+- `Assets/Scripts/Pickups.cs`: `LevelExit` trigger is now 1 x 8 tiles instead of 1 x 3; new `HeartPickup` class.
+- `Assets/Scripts/Levels.cs`: new tile `h`, `AddHeart`, new `HeartRest` chunk that the generator inserts at fixed points (it uses no random numbers, so other chunks are unchanged).
+- `Assets/Scripts/Sfx.cs`: new `OneUp` sound for a bonus life.
+- `Assets/WebGLTemplates/PixelHopper/index.html`: back to the 1.0.1 version (the focus hint was removed).
+- `Assets/Editor/BatchChecks.cs` (new, editor only): automated rule checks (flag, camera, lives, carry-over, hearts). `Assets/Editor/BatchBot.cs`: the stage report also counts hearts.
+- `ProjectSettings/ProjectSettings.asset`: version 1.1.0.
+
+### Verified
+- `BatchChecks` runs 11 checks. On the 1.0.2 code, 5 failed (flag, camera scrolling back, restart at stage 1, lives carry-over, heart missing); on the 1.1.0 code all 11 pass.
+- Test bot cleared all 10 stages (at most 1 death in a stage).
+
 ## [1.0.2] - 2026-10-06
 Update 2: **Desktop first run.** Fewer players stuck on a game that "does not respond" or does not fit their screen.
 

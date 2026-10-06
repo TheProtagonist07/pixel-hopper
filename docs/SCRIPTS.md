@@ -22,6 +22,7 @@ lines inline, so this page is the map and the scripts are the detail.
 | [Editor/CoverArt.cs](#editorcoverartcs-editor-only) | 420 | Editor-only generator for logo, cover, page art |
 | [Editor/BatchBot.cs](#editorbatchbotcs-editor-only) | 120 | Editor-only: runs the test bot and a stage report from the command line |
 | [Editor/ReleaseBuild.cs](#editorreleasebuildcs-editor-only) | 80 | Editor-only: builds the WebGL release with the correct settings |
+| [Editor/BatchChecks.cs](#editorbatchcheckscs-editor-only) | 200 | Editor-only: automated checks of the game rules (flag, camera, lives, hearts) |
 | [WebGLTemplates/PixelHopper/index.html](#webgltemplatespixelhopperindexhtml) | 110 | Web page that hosts the game |
 
 ---
@@ -43,7 +44,7 @@ lines inline, so this page is the map and the scripts are the detail.
 | `StartLevel`, `BuildLevel` | Unload the old stage and build the new one from a `LevelGrid`. |
 | `PlaceDecor` | Scatter bushes, cacti, crystals... with a seeded RNG and spacing rules. |
 | `BuildSolids` | Merge solid cells into few rectangular colliders (greedy rectangle merge). |
-| `AddCoin`, `PlayerDied`, `LevelComplete`, `AdvanceStage` | Game events called by other scripts. |
+| `AddCoin`, `AddLife`, `PlayerDied`, `LevelComplete`, `AdvanceStage` | Game events called by other scripts. Lives belong to the run (start 3, max 5, +1 per stage clear, hearts add 1); game over restarts at stage 1. |
 | `DrawUi` and the `Draw...` methods | Immediate-mode HUD, title, overlays, help dialog, touch buttons. |
 | `HelpLayout` | Single source of truth for the help dialog rectangles (used by drawing and clicking). |
 | `#if UNITY_EDITOR` members | `AutoPlay`, `DebugStartStage`, `DebugLog`, `Debug...` shortcuts for tests and screenshots. |
@@ -67,7 +68,7 @@ Requires `Rigidbody2D` and `BoxCollider2D` (auto-added). Creates its own `Visual
 |---|---|
 | Constants | Run speed 5.5, acceleration 60, braking 80, jump velocity 15, stomp bounce 12, coyote 0.1 s, jump buffer 0.12 s, max fall 22. |
 | `ReadInput` (Update) | Keyboard (A/D, arrows, Space/W/Up), gamepad (stick, D-pad, south button) and `TouchControls`; the editor bot replaces input. |
-| `FixedUpdate` | Ground check, landing detection, acceleration/braking, buffered + coyote jump, variable jump height, heavier fall gravity. |
+| `FixedUpdate` | Left-edge wall (the hero cannot cross `Game.CameraLeftEdge`), ground check, landing detection, acceleration/braking, buffered + coyote jump, variable jump height, heavier fall gravity. |
 | `UpdateAnimation` | Idle / walk A-B / jump sprites, facing flip, blinking while invulnerable. |
 | `UpdateShadowAndSquash` | Squash and stretch, plus a ground shadow found with a downward ray. |
 | `StompOrHurt(enemy)` | Called by an enemy hit box. Stomp = feet above enemy centre and vertical speed at most 2. |
@@ -81,12 +82,13 @@ Patrols with two short rays (wall ahead, ground ahead) and turns around at walls
 ## Pickups.cs
 - **`Coin`**: trigger circle, bobs, spins through 4 frames, calls `Game.AddCoin` and plays a sparkle when touched.
 - **`Hazard`**: spike tile with a trigger collider; hurts the player on touch.
-- **`LevelExit`**: the flag; a 1 x 3 tile trigger that calls `Game.LevelComplete`.
+- **`LevelExit`**: the flag; a 1 x 8 tile tall trigger (a full-height goal line, so it cannot be jumped over) that calls `Game.LevelComplete`.
+- **`HeartPickup`**: a bonus heart; touching it calls `Game.AddLife` (one life, up to 5). Left in place if the player already has 5.
 
 None are placed by hand: `Game.BuildLevel` creates an empty object and adds the component, which builds its own sprite and collider.
 
 ## CameraFollow.cs
-Added to the main camera by `Game`. Look-ahead grows with run speed (0.6 to 2.4 tiles), exponential smoothing,
+Added to the main camera by `Game`. Look-ahead grows with run speed (0.6 to 2.4 tiles), exponential smoothing, **one-way scrolling** (it never moves back; `LeftEdge` is the line the player cannot cross; `Recenter()` resets it after a respawn),
 clamped to the level, snapped to 1/32 unit, `Shake(duration, magnitude)` for hits, `SetTarget` for instant placement.
 
 ## Backdrop.cs
@@ -139,11 +141,16 @@ Two command-line entry points (see [TESTING.md](TESTING.md)). `BatchBot.Run` ope
 (so static state survives), speeds up time, watches `Game.DebugLog` for `CLEAR` or `TIMEOUT` lines, writes the result and exits with code 0 or 1.
 `BatchBot.Report` prints width, coins, enemies and spikes for every stage without entering Play mode.
 
+## Editor/BatchChecks.cs (editor only)
+Command-line rule checks (`BatchChecks.Run`, see [TESTING.md](TESTING.md)). Each check creates a situation (teleports the player, calls the same methods the game calls), waits
+for the real game code to react, and tests the outcome: flag, one-way camera and left wall, three deaths and restart at stage 1, lives carried between stages, heart pickups.
+Reads private game state with reflection, so the same checks run on an older version of the code to prove that a fix really fixes something.
+
 ## Editor/ReleaseBuild.cs (editor only)
 Applies the WebGL release settings (template, no splash, gzip with decompression fallback, no exceptions, hashed file names, medium stripping) and calls
 `BuildPipeline.BuildPlayer` in the same call. Menu item **Tools > Pixel Hopper > Build WebGL** or `-executeMethod ReleaseBuild.Build -buildOut FOLDER`
 ([WEBGL_BUILD_AND_ITCH.md](WEBGL_BUILD_AND_ITCH.md)).
 
 ## WebGLTemplates/PixelHopper/index.html
-Custom page for the web build: loading bar, canvas, keyboard and touch hygiene, and a "click the game to play" hint shown while the page lacks keyboard focus. Unity fills in file names through template
+Custom page for the web build: loading bar, canvas, keyboard and touch hygiene, . Unity fills in file names through template
 variables. See [WEBGL_BUILD_AND_ITCH.md](WEBGL_BUILD_AND_ITCH.md).

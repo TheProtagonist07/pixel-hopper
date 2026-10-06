@@ -22,7 +22,7 @@ The view is narrow on purpose: you only see a few tiles ahead, so every gap, spi
 - **10 stages, 10 worlds:** Sunny Meadow, Sunset Run, Deep Cave, Frozen Peaks, Dusty Desert, Midnight, Lava Fields and more, each with its own sky, mountains and mood
 - **Easy to learn, tricky to finish:** stages ramp from gentle hops to spike runs and enemy gauntlets
 - **Stomp enemies** from above, dodge spikes and pits, and chain coins for a rising chime
-- **3 lives per stage**, instant retry, no menus in the way
+- **3 lives for the whole run** (max 5): clear a stage to win a heart back, grab bonus hearts on the way, lose them all and you start over
 - **Chiptune music and sound effects**
 - **Plays right in your browser**, on desktop or phone. No download, no sign-up
 
@@ -92,6 +92,12 @@ Attach `promo/pixel-hopper-clip.mp4` (or the GIF).
 - Note where players say they got stuck, and tune those stages in an update.
 
 ## Update notes (paste on the itch.io page after each upload)
+
+**v1.1.0 (fair play)**
+- The camera no longer scrolls back: once the screen moves forward, the left edge is a wall, like the classics.
+- Jumping over the top of the flag pole now finishes the stage.
+- New lives rule: 3 lives for the whole run (max 5). Clear a stage to get a heart back, find bonus hearts inside stages 2 to 10, and if you lose them all you start over at stage 1.
+- Title prompt now says "CLICK OR PRESS SPACE TO START".
 
 **v1.0.2 (easier first start)**
 - New hint "CLICK THE GAME TO PLAY" appears when the game does not have keyboard focus yet, so the first key press is never lost.

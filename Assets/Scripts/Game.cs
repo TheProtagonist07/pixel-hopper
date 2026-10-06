@@ -15,7 +15,9 @@ using UnityEngine.Rendering.Universal;
 ///  3. Playing: PlayerController and the other scripts run themselves. They call back into this class through
 ///     <see cref="AddCoin"/>, <see cref="PlayerDied"/> and <see cref="LevelComplete"/>.
 ///  4. LevelComplete: 2.6 seconds of celebration, then <see cref="AdvanceStage"/> builds the next stage, or shows the win screen after stage 10.
-///  5. PlayerDied: lose a life and respawn; at zero lives the game is over and a tap retries the CURRENT stage.
+///  5. PlayerDied: lose a life and respawn; at zero lives it is game over and the next run starts again at stage 1.
+///     Lives belong to the whole run (3 at the start, at most 5): each cleared stage gives one back and
+///     heart pickups inside stages give more (see AddLife).
 ///
 /// Execution order -100 makes this run before every other script, so a stage is built before its objects first update.
 ///
@@ -38,7 +40,8 @@ public class Game : MonoBehaviour
     // across: a deliberately narrow view that makes stages harder and keeps the art large on phones.
     const float ViewTilesHigh = 15f;
     const float PortraitAspect = 9f / 16f;
-    const int LivesPerStage = 3;
+    const int StartingLives = 3;        // lives at the start of a run
+    const int MaxLives = 5;             // the heart bonuses never take the player above this
     const float BannerSeconds = 2.2f;   // how long the "STAGE n" banner stays at the start of a stage
 
     // PlayerPrefs key remembering that the player pressed SKIP, so the help dialog no longer opens on start.
@@ -49,9 +52,9 @@ public class Game : MonoBehaviour
     enum State { Title, Help, Playing, StageClear, GameOver, Won }
 
     int levelIndex;                     // zero-based index of the current stage
-    int lives = LivesPerStage;
+    int lives = StartingLives;          // lives for the whole run: they carry from stage to stage
+    bool heartAwarded;                  // did clearing this stage give a heart (shown on the clear panel)?
     int totalCoins;                     // coins collected in the whole run so far
-    int coinsAtStageStart;              // total at the start of this stage; a retry after game over restores it
     int stageCoins;                     // coins collected in this stage (shown on the clear panel)
     int stageCoinTotal;                 // coins available in this stage
     float levelStartTime;
@@ -250,13 +253,15 @@ public class Game : MonoBehaviour
                 BeginGame();
                 break;
             case State.GameOver:
-                totalCoins = coinsAtStageStart;
+                // Out of lives: a new run from the very first stage, with fresh lives and no coins.
+                totalCoins = 0;
+                lives = StartingLives;
                 Sfx.Play(Clip.Start);
-                StartLevel(levelIndex);
+                StartLevel(0);
                 break;
             case State.Won:
                 totalCoins = 0;
-                coinsAtStageStart = 0;
+                lives = StartingLives;
                 Sfx.Play(Clip.Start);
                 StartLevel(0);
                 break;
@@ -268,7 +273,7 @@ public class Game : MonoBehaviour
     void BeginGame()
     {
         totalCoins = 0;
-        coinsAtStageStart = 0;
+        lives = StartingLives;
         Sfx.Play(Clip.Start);
         Sfx.StartMusic();
 #if UNITY_EDITOR
@@ -344,9 +349,7 @@ public class Game : MonoBehaviour
         levelIndex = index;
         state = State.Playing;
         levelStartTime = Time.time;
-        lives = LivesPerStage;
         stageCoins = 0;
-        coinsAtStageStart = totalCoins;
         coinStreak = 0;
 #if UNITY_EDITOR
         stageDeaths = 0;
@@ -392,6 +395,9 @@ public class Game : MonoBehaviour
                         break;
                     case '^':
                         NewObject<Hazard>("Spikes", items, center);
+                        break;
+                    case 'h':
+                        NewObject<HeartPickup>("Heart", items, center);
                         break;
                     case 'e':
                         // Enemies and the exit are placed by their feet (the bottom of the cell), not the cell centre.
@@ -559,7 +565,7 @@ public class Game : MonoBehaviour
 
     /// <summary>
     /// Called by the player (or a hazard) when the player dies. Removes a life and respawns at the stage start;
-    /// with no lives left, the game is over (a retry restarts the same stage with 3 lives).
+    /// with no lives left, the game is over and the next run starts again at stage 1.
     /// In bot mode (editor only) deaths are only logged and the bot respawns for free.
     /// </summary>
     public void PlayerDied(PlayerController p)
@@ -571,6 +577,7 @@ public class Game : MonoBehaviour
         {
             if (stageDeaths <= 8) DebugLog.Add($"  stage {levelIndex + 1} death #{stageDeaths} at x={p.transform.position.x:F1} y={p.transform.position.y:F1}");
             p.Respawn(spawnPoint);
+            follow.Recenter();
             return;
         }
 #endif
@@ -586,7 +593,26 @@ public class Game : MonoBehaviour
         }
         Sfx.Play(Clip.Hurt);
         p.Respawn(spawnPoint);
+        follow.Recenter();   // the camera only moves forward, so put it back at the start with the player
     }
+
+    /// <summary>
+    /// Called by a heart pickup. Adds one life (at most <see cref="MaxLives"/>) and plays the 1-up jingle.
+    /// </summary>
+    /// <returns>False when the player already has the maximum, so the heart is left where it is.</returns>
+    public bool AddLife()
+    {
+        if (lives >= MaxLives) return false;
+        lives++;
+        Sfx.Play(Clip.OneUp);
+        return true;
+    }
+
+    /// <summary>
+    /// The x position (world units) of the left edge of the screen. The camera never scrolls back, so the player
+    /// cannot walk past this line: it works like the invisible wall at the left of the screen in classic platformers.
+    /// </summary>
+    public float CameraLeftEdge => follow != null ? follow.LeftEdge : 0f;
 
     /// <summary>
     /// Called by the exit flag when the player reaches it. Freezes the player, plays the jingle and a gold
@@ -598,6 +624,9 @@ public class Game : MonoBehaviour
         state = State.StageClear;
         player.Freeze();
         Sfx.Play(Clip.StageClear);
+        // Clearing a stage gives one life back, up to the maximum.
+        heartAwarded = lives < MaxLives;
+        if (heartAwarded) lives++;
         Fx.Burst(player.transform.position + Vector3.up, new Color(1f, 0.9f, 0.35f, 1f), 24, 5f, 0.9f, 4f, 0.16f, 2f);
 #if UNITY_EDITOR
         DebugLog.Add($"stage {levelIndex + 1}: CLEAR time={Time.time - levelStartTime:F1}s deaths={stageDeaths}");
@@ -708,7 +737,7 @@ public class Game : MonoBehaviour
         if (Mathf.FloorToInt(t * 2f) % 2 == 0)
         {
             int k = UiKit.K(u, 0.4f);
-            UiKit.Text(new Rect(v.x, v.y + v.height * 0.8f, v.width, u * 7), TouchControls.Available ? "TAP TO START" : "PRESS SPACE TO START", k, Gold);
+            UiKit.Text(new Rect(v.x, v.y + v.height * 0.8f, v.width, u * 7), TouchControls.Available ? "TAP TO START" : "CLICK OR PRESS SPACE TO START", k, Gold);
         }
         UiKit.Text(new Rect(v.x, v.yMax - u * 6f, v.width, u * 4f), "M: SOUND ON/OFF   H: HELP", UiKit.K(u, 0.2f), new Color(1f, 1f, 1f, 0.85f));
     }
@@ -763,18 +792,19 @@ public class Game : MonoBehaviour
                 UiKit.Panel(panel, pk, PanelTint);
                 UiKit.Text(new Rect(panel.x, panel.y + u * 3f, panel.width, u * 9f), "STAGE " + (levelIndex + 1) + " CLEAR!", mid + 1, Gold);
                 UiKit.Text(new Rect(panel.x, panel.y + u * 14f, panel.width, u * 6f), "COINS  " + stageCoins + " / " + stageCoinTotal, mid, Color.white);
-                UiKit.Text(new Rect(panel.x, panel.y + u * 21f, panel.width, u * 5f), levelIndex + 1 < Levels.Count ? "GET READY FOR THE NEXT ONE" : "THAT WAS THE LAST STAGE!", small, new Color(1f, 1f, 1f, 0.85f));
+                UiKit.Text(new Rect(panel.x, panel.y + u * 21f, panel.width, u * 5f), levelIndex + 1 >= Levels.Count ? "THAT WAS THE LAST STAGE!" : heartAwarded ? "+1 HEART!" : "HEARTS FULL", small, new Color(1f, 0.6f, 0.65f, 1f));
                 break;
             }
             case State.GameOver:
             {
                 Dim(v, 0.4f);
-                var panel = new Rect(v.x + u * 6f, area.y - u * 3f, v.width - u * 12f, u * 32f);
+                var panel = new Rect(v.x + u * 6f, area.y - u * 3f, v.width - u * 12f, u * 37f);
                 UiKit.Panel(panel, pk, PanelTint);
                 UiKit.Text(new Rect(panel.x, panel.y + u * 3f, panel.width, u * 10f), "GAME OVER", big - 1, new Color(1f, 0.45f, 0.5f));
-                UiKit.Text(new Rect(panel.x, panel.y + u * 16f, panel.width, u * 5f), "STAGE " + (levelIndex + 1) + " - " + theme.Name.ToUpper(), small, Color.white);
+                UiKit.Text(new Rect(panel.x, panel.y + u * 15f, panel.width, u * 5f), "REACHED STAGE " + (levelIndex + 1), small, Color.white);
+                UiKit.Text(new Rect(panel.x, panel.y + u * 21f, panel.width, u * 5f), "YOU START OVER AT STAGE 1", small, new Color(1f, 1f, 1f, 0.85f));
                 if (Mathf.FloorToInt(Time.unscaledTime * 2f) % 2 == 0)
-                    UiKit.Text(new Rect(panel.x, panel.y + u * 23f, panel.width, u * 6f), TouchControls.Available ? "TAP TO RETRY" : "PRESS SPACE TO RETRY", mid, Gold);
+                    UiKit.Text(new Rect(panel.x, panel.y + u * 28f, panel.width, u * 6f), TouchControls.Available ? "TAP TO TRY AGAIN" : "PRESS SPACE TO TRY AGAIN", mid, Gold);
                 break;
             }
             case State.Won:

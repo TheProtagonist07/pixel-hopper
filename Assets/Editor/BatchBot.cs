@@ -72,7 +72,7 @@ public static class BatchBot
 
     /// <summary>
     /// Entry point for -executeMethod BatchBot.Report: prints one line per stage with its width in tiles and how many
-    /// coins, enemies and spike tiles it contains, then exits. Runs without Play mode, so it takes only a few seconds.
+    /// coins, enemies, spike tiles and bonus hearts it contains, then exits. Runs without Play mode, so it takes only a few seconds.
     /// Use it to see exactly what a change to the level generator did (run it before and after and compare).
     /// </summary>
     public static void Report()
@@ -81,7 +81,7 @@ public static class BatchBot
         for (int i = 0; i < Levels.Count; i++)
         {
             var g = Levels.Build(i);
-            int coins = 0, enemies = 0, spikes = 0;
+            int coins = 0, enemies = 0, spikes = 0, hearts = 0;
             for (int x = 0; x < g.Width; x++)
             {
                 for (int y = 0; y < g.Height; y++)
@@ -90,9 +90,10 @@ public static class BatchBot
                     if (c == 'c') coins++;
                     else if (c == 'e') enemies++;
                     else if (c == '^') spikes++;
+                    else if (c == 'h') hearts++;
                 }
             }
-            sb.AppendLine($"stage {i + 1,2}: width={g.Width,3} coins={coins,3} enemies={enemies,2} spikes={spikes,2} enemySpeed={g.EnemySpeed:F2}");
+            sb.AppendLine($"stage {i + 1,2}: width={g.Width,3} coins={coins,3} enemies={enemies,2} spikes={spikes,2} hearts={hearts} enemySpeed={g.EnemySpeed:F2}");
         }
         string text = sb.ToString();
         Debug.Log(text);
