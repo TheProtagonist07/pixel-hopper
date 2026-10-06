@@ -23,6 +23,7 @@ lines inline, so this page is the map and the scripts are the detail.
 | [Editor/BatchBot.cs](#editorbatchbotcs-editor-only) | 120 | Editor-only: runs the test bot and a stage report from the command line |
 | [Editor/ReleaseBuild.cs](#editorreleasebuildcs-editor-only) | 80 | Editor-only: builds the WebGL release with the correct settings |
 | [Editor/BatchChecks.cs](#editorbatchcheckscs-editor-only) | 200 | Editor-only: automated checks of the game rules (flag, camera, lives, hearts) |
+| [Editor/ScreenshotTour.cs](#editorscreenshottourcs-editor-only) | 150 | Editor-only: takes the update-post screenshots from the real game |
 | [WebGLTemplates/PixelHopper/index.html](#webgltemplatespixelhopperindexhtml) | 110 | Web page that hosts the game |
 
 ---
@@ -145,6 +146,10 @@ Two command-line entry points (see [TESTING.md](TESTING.md)). `BatchBot.Run` ope
 Command-line rule checks (`BatchChecks.Run`, see [TESTING.md](TESTING.md)). Each check creates a situation (teleports the player, calls the same methods the game calls), waits
 for the real game code to react, and tests the outcome: flag, one-way camera and left wall, three deaths and restart at stage 1, lives carried between stages, heart pickups.
 Reads private game state with reflection, so the same checks run on an older version of the code to prove that a fix really fixes something.
+
+## Editor/ScreenshotTour.cs (editor only)
+Opens the game in a windowed editor, puts it in a series of situations (title, heart pickup, stage clear, game over, left wall) and captures each with `DebugShot`
+([TESTING.md](TESTING.md), section 2c). `tools/crop_shots.py` then removes the black bars around the 9:16 view.
 
 ## Editor/ReleaseBuild.cs (editor only)
 Applies the WebGL release settings (template, no splash, gzip with decompression fallback, no exceptions, hashed file names, medium stripping) and calls

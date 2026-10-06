@@ -15,6 +15,16 @@ Update 3: **Fair play.** Three bug fixes reported by the owner plus a new lives 
 - **New lives rule.** Lives belong to the whole run: you start with 3, they do not refill between stages, and the maximum is 5. Clearing a stage gives back 1 heart ("+1 HEART!" on the clear panel). When the lives run out it is game over and the next run starts again at stage 1 with 3 lives and no coins (before, game over retried the same stage and every stage started with 3 lives).
 - **Bonus hearts inside stages.** From stage 2 there is a rest area with a heart in the middle of the stage; from stage 6 there is a second one later on. Touching a heart gives 1 life (up to 5). At 5 lives the heart is left where it is. Stages 2 to 10 are about 9 to 18 tiles longer because of the rest areas; their enemies and spikes did not change.
 
+### Screenshots
+| | |
+|---|---|
+| ![Title prompt](docs/images/v1.1.0/01_title.png) | ![Bonus heart in stage 2](docs/images/v1.1.0/02_bonus_heart.png) |
+| New title prompt: "CLICK OR PRESS SPACE TO START" | A bonus heart in a stage 2 rest area (hearts show x2) |
+| ![Heart collected](docs/images/v1.1.0/03_heart_collected.png) | ![Stage clear with heart bonus](docs/images/v1.1.0/04_stage_clear_heart.png) |
+| Heart collected: hearts go from x2 to x3 | Stage clear panel: "+1 HEART!" |
+| ![Game over](docs/images/v1.1.0/05_game_over.png) | ![Left edge wall](docs/images/v1.1.0/06_left_edge_wall.png) |
+| Game over: "YOU START OVER AT STAGE 1" | The hero stopped by the left edge of the screen |
+
 ### Code changes
 - `Assets/Scripts/Game.cs`: lives are now per run (`StartingLives = 3`, `MaxLives = 5`); `lives` is no longer reset in `StartLevel`; game over restarts at stage 1; `LevelComplete` awards a heart; new `AddLife()` and `CameraLeftEdge`; `PlayerDied` re-centres the camera after a respawn; new heart tile `h` in `BuildLevel`; UI text (title prompt, clear panel, game over panel). The `coinsAtStageStart` field was removed because retrying a stage no longer exists.
 - `Assets/Scripts/CameraFollow.cs`: one-way camera (`maxX` ratchet in `LateUpdate`), `LeftEdge` property and `Recenter()`.

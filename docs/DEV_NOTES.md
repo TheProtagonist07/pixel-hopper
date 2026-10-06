@@ -41,5 +41,6 @@ Every update has **one focus point**. Work on a branch named `update/<version>-<
 3. Update `CHANGELOG.md` with two lists: **What changed** (player-facing) and **Code changes** (file by file). Update `docs/KNOWN_ISSUES.md`, `docs/ROADMAP.md` and any doc that describes the changed code.
 4. Bump the version (Project Settings > Player > Version, field `bundleVersion`).
 5. Build with `ReleaseBuild.Build` (`docs/WEBGL_BUILD_AND_ITCH.md`), zip with `index.html` at the zip root, play it once in a browser.
-6. Commit on the branch, merge into `main`, tag `vX.Y.Z`, push `main` and the tag.
-7. On itch.io upload the zip to the same file slot and paste the update note (text in `docs/itch-page-copy.md`).
+6. Take screenshots of the new things with `ScreenshotTour` (`docs/TESTING.md`, section 2c) and save them in `docs/images/vX.Y.Z/`.
+7. Commit on the branch, merge into `main`, tag `vX.Y.Z`, push `main` and the tag.
+8. On itch.io upload the zip to the same file slot and paste the update note (text in `docs/itch-page-copy.md`).
