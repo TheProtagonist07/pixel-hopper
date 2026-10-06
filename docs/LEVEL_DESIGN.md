@@ -42,7 +42,7 @@ Build(stage):
   finish: 12 tiles of ground, 4 coins, goal flag, crop the grid
 ```
 
-The grid is allocated 600 tiles wide (far more than needed; stage 10 is about 220) and cropped to the used width at the end.
+The grid is allocated 600 tiles wide (far more than needed; stage 10 is about 200) and cropped to the used width at the end.
 
 ### Chunk catalogue
 

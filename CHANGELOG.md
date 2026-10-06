@@ -3,7 +3,11 @@
 All notable changes to Pixel Hopper. Newest first. Update this file with every fix or feature.
 
 ## [Unreleased]
-- (nothing yet)
+### Housekeeping (no change for players)
+- Docs: corrected script and line counts, the length of stage 10 (about 200 tiles), the per-file line counts in `docs/SCRIPTS.md`, and the v1.0.2 itch note (v1.0.2 was never published on its own).
+- Code comment in `Levels.cs`: stage 10 length (about 200 tiles). No code changed.
+- `BatchChecks.cs` and `ScreenshotTour.cs` use `FindAnyObjectByType` instead of the deprecated `FindFirstObjectByType` (removes 5 compiler warnings in the editor tools).
+- `.vscode/` is no longer tracked in Git (Unity rewrites it on every run).
 
 ## [1.1.0] - 2026-10-06
 Update 3: **Fair play.** Three bug fixes reported by the owner plus a new lives rule and bonus hearts.

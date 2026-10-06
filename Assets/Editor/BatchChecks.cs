@@ -116,7 +116,7 @@ public static class BatchChecks
         game.DebugStage(0);
         yield return 0.5f;
         Game.DebugLog.Clear();
-        var exit = Object.FindFirstObjectByType<LevelExit>();
+        var exit = Object.FindAnyObjectByType<LevelExit>();
         var player = game.Player;
         // Recreate a real jump over the pole. A full jump peaks about 3.8 tiles up, and crossing the pole's 1 tile wide column
         // takes about 0.3 s, so the feet stay between 3.5 and 3.8 tiles up the whole time. That is above the old 3 tile tall
@@ -193,7 +193,7 @@ public static class BatchChecks
             yield return 0.5f;
             SetLives(2);
             player = game.Player;
-            var heart = Object.FindFirstObjectByType(heartType) as Component;
+            var heart = Object.FindAnyObjectByType(heartType) as Component;
             Report("hearts: stage 2 contains a bonus heart", heart != null);
             if (heart != null)
             {
@@ -205,10 +205,10 @@ public static class BatchChecks
                 yield return 0.5f;
                 SetLives(5);
                 player = game.Player;
-                heart = Object.FindFirstObjectByType(heartType) as Component;
+                heart = Object.FindAnyObjectByType(heartType) as Component;
                 Teleport(player, heart.transform.position + Vector3.down * 0.3f);
                 yield return 0.5f;
-                Report("hearts: with 5 lives the heart gives nothing and stays", Lives() == 5 && Object.FindFirstObjectByType(heartType) != null, "lives " + Lives());
+                Report("hearts: with 5 lives the heart gives nothing and stays", Lives() == 5 && Object.FindAnyObjectByType(heartType) != null, "lives " + Lives());
             }
         }
     }

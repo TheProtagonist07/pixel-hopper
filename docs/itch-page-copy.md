@@ -99,8 +99,7 @@ Attach `promo/pixel-hopper-clip.mp4` (or the GIF).
 - New lives rule: 3 lives for the whole run (max 5). Clear a stage to get a heart back, find bonus hearts inside stages 2 to 10, and if you lose them all you start over at stage 1.
 - Title prompt now says "CLICK OR PRESS SPACE TO START".
 
-**v1.0.2 (easier first start)**
-- New hint "CLICK THE GAME TO PLAY" appears when the game does not have keyboard focus yet, so the first key press is never lost.
+**v1.0.2** was never published on itch.io on its own: its changes were replaced by v1.1.0 (the "click the game to play" hint box was removed again, so there is no separate note to post).
 
 **v1.0.1 (stage 1 gets an enemy)**
 - Stage 1 now has its first enemy: one slow blob to stomp, so you meet it before stage 2.

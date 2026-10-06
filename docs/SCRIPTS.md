@@ -5,12 +5,12 @@ lines inline, so this page is the map and the scripts are the detail.
 
 | File | Lines (approx.) | Role |
 |---|---|---|
-| [Game.cs](#gamecs) | 890 | Director: state machine, cameras, stage building, HUD and dialogs |
-| [Levels.cs](#levelscs) | 500 | Stage generator, tile grid, 10 world themes |
-| [PlayerController.cs](#playercontrollercs) | 400 | Hero movement, jump feel, stomp and hurt |
+| [Game.cs](#gamecs) | 920 | Director: state machine, cameras, stage building, HUD and dialogs |
+| [Levels.cs](#levelscs) | 530 | Stage generator, tile grid, 10 world themes |
+| [PlayerController.cs](#playercontrollercs) | 410 | Hero movement, jump feel, stomp and hurt |
 | [Enemy.cs](#enemycs) | 150 | Patrolling blob enemy |
-| [Pickups.cs](#pickupscs) | 110 | Coin, spike hazard, level exit |
-| [CameraFollow.cs](#camerafollowcs) | 110 | Look-ahead camera with shake and pixel snapping |
+| [Pickups.cs](#pickupscs) | 150 | Coin, spike hazard, level exit |
+| [CameraFollow.cs](#camerafollowcs) | 140 | Look-ahead camera with shake and pixel snapping |
 | [Backdrop.cs](#backdropcs) | 620 | Sky, parallax scenery, sun/moon, clouds, lightning, particles |
 | [PixelPainter.cs](#pixelpaintercs) | 230 | Shape painter with 3D-style lighting |
 | [PixelArt.cs](#pixelartcs) | 690 | Sprite library and atlas |
@@ -20,11 +20,11 @@ lines inline, so this page is the map and the scripts are the detail.
 | [TouchControls.cs](#touchcontrolscs) | 70 | Touch zones for phones |
 | [AutoPlayer.cs](#autoplayercs-editor-only) | 150 | Editor-only test bot, screenshot and video helpers |
 | [Editor/CoverArt.cs](#editorcoverartcs-editor-only) | 420 | Editor-only generator for logo, cover, page art |
-| [Editor/BatchBot.cs](#editorbatchbotcs-editor-only) | 120 | Editor-only: runs the test bot and a stage report from the command line |
-| [Editor/ReleaseBuild.cs](#editorreleasebuildcs-editor-only) | 80 | Editor-only: builds the WebGL release with the correct settings |
-| [Editor/BatchChecks.cs](#editorbatchcheckscs-editor-only) | 200 | Editor-only: automated checks of the game rules (flag, camera, lives, hearts) |
-| [Editor/ScreenshotTour.cs](#editorscreenshottourcs-editor-only) | 150 | Editor-only: takes the update-post screenshots from the real game |
-| [WebGLTemplates/PixelHopper/index.html](#webgltemplatespixelhopperindexhtml) | 110 | Web page that hosts the game |
+| [Editor/BatchBot.cs](#editorbatchbotcs-editor-only) | 140 | Editor-only: runs the test bot and a stage report from the command line |
+| [Editor/ReleaseBuild.cs](#editorreleasebuildcs-editor-only) | 70 | Editor-only: builds the WebGL release with the correct settings |
+| [Editor/BatchChecks.cs](#editorbatchcheckscs-editor-only) | 220 | Editor-only: automated checks of the game rules (flag, camera, lives, hearts) |
+| [Editor/ScreenshotTour.cs](#editorscreenshottourcs-editor-only) | 160 | Editor-only: takes the update-post screenshots from the real game |
+| [WebGLTemplates/PixelHopper/index.html](#webgltemplatespixelhopperindexhtml) | 120 | Web page that hosts the game |
 
 ---
 

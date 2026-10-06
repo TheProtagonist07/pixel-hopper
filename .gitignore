@@ -120,3 +120,6 @@ InitTestScene*.unity*
 /Assets/_Recovery/
 /Assets/_Recovery.meta
 /Data/
+
+# VS Code settings written by the Unity editor (rewritten on every run, not part of the project)
+.vscode/
