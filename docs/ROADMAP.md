@@ -13,7 +13,7 @@ and makes every change a lesson that can be explained on its own. Process: `docs
 | Update | Focus | Status |
 |---|---|---|
 | v1.0.1 | Stage 1 gets its first enemy (KI-006) | Done |
-| v1.0.2 | Smaller itch embed and a first-key hint (the hint was removed again in 1.1.0) | Done |
+| v1.0.2 | First-key hint (removed again in 1.1.0); a smaller itch embed was tried and reverted to 540 x 960 | Done |
 | v1.1.0 | Fair play: one-way camera, flag fix, lives per run, bonus hearts | Done |
 | v1.1.1 | iPhone silent-mode audio (KI-001) | Next candidate |
 | v1.2 | Gun pickup and ranged shots (prototype parked on branch `feature/blaster`) | Planned |
@@ -24,7 +24,7 @@ and makes every change a lesson that can be explained on its own. Process: `docs
 ## 1. Fixes
 - [x] Stage 1 gets an enemy (KI-006), v1.0.1
 - [x] First key press: title prompt "CLICK OR PRESS SPACE TO START" (KI-004), v1.1.0
-- [x] Embed size 405 x 720 on itch.io (KI-002), v1.0.2 (page setting)
+- [x] Embed size: tried 405 x 720, kept 540 x 960 because the smaller frame cropped the cover (KI-002, accepted)
 - [ ] Fix description typo (KI-003)
 - [ ] iPhone silent-mode audio fix (KI-001), optional
 - [ ] Triage player-reported bugs (see `docs/KNOWN_ISSUES.md`)

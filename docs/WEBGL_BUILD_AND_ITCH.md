@@ -75,7 +75,7 @@ Manual steps, if you prefer the editor:
 |---|---|
 | Kind of project | HTML |
 | Upload | The zip, marked "This file will be played in the browser" |
-| Embed options | Click-to-launch, **viewport 405 x 720** (same 9:16 shape as the old 540 x 960, 25% smaller so it fits most laptops; see KI-002), fullscreen button on, mobile friendly on, autostart off |
+| Embed options | Click-to-launch, **viewport 540 x 960** (matches the launch cover, which is made at exactly this size; a smaller 405 x 720 frame cropped the cover and showed more page background, see KI-002), fullscreen button on, mobile friendly on, autostart off |
 | Visibility | Public once happy (it was set to Draft first) |
 | Page theme | Background `#130a28`, secondary background `#1c0f3d`, text `#ece6ff`, link `#ffd84a`; background image set to the generated page background, no repeat, top centre |
 | Banner | The generated environment banner |
@@ -102,5 +102,5 @@ Page text, tags and descriptions: [itch-page-copy.md](itch-page-copy.md).
 | Issue | Where documented |
 |---|---|
 | No sound on iPhone when the silent switch is on | KI-001. Optional fix: `navigator.audioSession.type = 'playback'` in the template |
-| Embed frame taller than many laptop screens (use viewport 405 x 720) | KI-002 |
+| Embed frame taller than many laptop screens (accepted; players use the fullscreen button) | KI-002 |
 | First Space press ignored until the page has focus (title prompt says "CLICK OR PRESS SPACE") | KI-004 |
