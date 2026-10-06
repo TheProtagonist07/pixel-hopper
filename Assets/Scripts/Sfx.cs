@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>The sound effects the game can play (see <see cref="Sfx.Play"/>).</summary>
-public enum Clip { Jump, Coin, Stomp, Hurt, Step, Land, StageClear, GameOver, Start }
+public enum Clip { Jump, Coin, Stomp, Hurt, Step, Land, StageClear, GameOver, Start, Shoot, PowerUp, Hit }
 
 /// <summary>
 /// All of the game's audio, generated in code. There are no audio files in the project:
@@ -54,6 +54,10 @@ public class Sfx : MonoBehaviour
         clips[Clip.StageClear] = Tone("clear", 0.7f, u => Arp(u, 523f, 659f, 784f, 1047f), u => 0.3f * (1f - 0.5f * u), Wave.Square);         // C-E-G-C arpeggio up
         clips[Clip.GameOver] = Tone("gameover", 1.1f, u => Arp(u, 392f, 349f, 311f, 262f), u => 0.34f * (1f - 0.4f * u), Wave.Triangle);      // four notes down
         clips[Clip.Start] = Tone("start", 0.3f, u => u < 0.5f ? 660f : 880f, u => 0.28f * (1f - u), Wave.Square);                             // two-note confirm
+
+        clips[Clip.Shoot] = Tone("shoot", 0.14f, u => Mathf.Lerp(1100f, 260f, u), u => 0.26f * Mathf.Pow(1f - u, 1.3f), Wave.Square, 0.12f);   // quick falling "pew"
+        clips[Clip.PowerUp] = Tone("powerup", 0.42f, u => Arp(u, 523f, 659f, 784f, 1047f, 1319f, 1568f), u => 0.3f * (1f - 0.4f * u), Wave.Square);       // fast rising arpeggio
+        clips[Clip.Hit] = Tone("hit", 0.1f, u => Mathf.Lerp(420f, 200f, u), u => 0.36f * (1f - u), Wave.Triangle, 0.35f);                     // dull tick when a tough enemy is hit
 
         musicSource.clip = BuildMusic();
     }

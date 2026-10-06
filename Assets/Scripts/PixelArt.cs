@@ -53,6 +53,20 @@ public static class PixelArt
     public static Sprite EnemyA => Get("enemy_a");
     /// <summary>Enemy walk frame B.</summary>
     public static Sprite EnemyB => Get("enemy_b");
+    /// <summary>Spiky enemy walk frame A (a red shell with white spikes; cannot be stomped).</summary>
+    public static Sprite SpikyA => Get("spiky_a");
+    /// <summary>Spiky enemy walk frame B.</summary>
+    public static Sprite SpikyB => Get("spiky_b");
+    /// <summary>Flying enemy wings-up frame.</summary>
+    public static Sprite FlyerA => Get("flyer_a");
+    /// <summary>Flying enemy wings-down frame.</summary>
+    public static Sprite FlyerB => Get("flyer_b");
+    /// <summary>The blaster in the hero's hand and in the HUD (facing right).</summary>
+    public static Sprite Gun => Get("gun");
+    /// <summary>The blaster pickup: the gun inside a glowing aura.</summary>
+    public static Sprite GunPickup => Get("gun_pickup");
+    /// <summary>A blaster shot (a small glowing orb, facing right).</summary>
+    public static Sprite Bullet => Get("bullet");
     /// <summary>Plain dirt tile (32 x 32).</summary>
     public static Sprite Dirt => Get("dirt");
     /// <summary>Dirt tile with a grass top.</summary>
@@ -134,6 +148,21 @@ public static class PixelArt
             var t = Enemy(f);
             Add(f == 0 ? "enemy_a" : "enemy_b", t, Feet(t));
         }
+        // Spiky and flying enemies, 2 frames each (feet pivot like the walker, so Game places all enemies the same way).
+        for (int f = 0; f < 2; f++)
+        {
+            var t = Spiky(f);
+            Add(f == 0 ? "spiky_a" : "spiky_b", t, Feet(t));
+            var fl = Flyer(f);
+            Add(f == 0 ? "flyer_a" : "flyer_b", fl, Feet(fl));
+        }
+        // Blaster weapon sprites.
+        var gunTex = GunTexture(false);
+        Add("gun", gunTex, Mid(gunTex));
+        var gunPickupTex = GunTexture(true);
+        Add("gun_pickup", gunPickupTex, Mid(gunPickupTex));
+        var bulletTex = BulletTexture();
+        Add("bullet", bulletTex, Mid(bulletTex));
         // Coin: 4 frames; the number is the fraction of full width shown.
         float[] widths = { 1f, 0.72f, 0.2f, 0.72f };
         for (int i = 0; i < CoinKeys.Length; i++)
@@ -538,6 +567,120 @@ public static class PixelArt
         p.Pixel(12, 18, Color.white);
         p.Pixel(15, 18, Color.white);
 
+        return p.Bake();
+    }
+
+    // The spiky enemy, 28 x 26 pixels: a red round shell with a crown of five white spikes on top, small angry eyes
+    // and two dark feet. Stomping it hurts the player, so it must be avoided or shot (it takes two hits).
+    static Texture2D Spiky(int frame)
+    {
+        var p = new PixelPainter(28, 26);
+        Color shell = C(222, 74, 78), dark = C(120, 36, 60), bone = C(250, 244, 226);
+
+        // Feet first, like the walker, so the body overlaps them.
+        float leftTop = frame == 0 ? 21f : 22.5f, rightTop = frame == 0 ? 22.5f : 21f;
+        p.RoundRect(4.5f, leftTop, 12.5f, 25.5f, 2.2f, dark, 0.9f);
+        p.RoundRect(15.5f, rightTop, 23.5f, 25.5f, 2.2f, dark, 0.9f);
+
+        // Five spikes: each is a triangle built from rows that get wider toward the base. Painted before the body so
+        // the shell covers their bottoms. Spike k is centred at x = 4.5 + 4.75 k and 8 pixels tall.
+        for (int k = 0; k < 5; k++)
+        {
+            float cx = 4.5f + 4.75f * k;
+            float height = k == 2 ? 9f : (k == 1 || k == 3) ? 8f : 6.5f;
+            for (int r = 0; r < height; r++)
+            {
+                float half = 0.6f + r * 0.42f;
+                for (int x = Mathf.RoundToInt(cx - half); x <= Mathf.RoundToInt(cx + half); x++)
+                    p.Custom(x, 11 - Mathf.RoundToInt(height) + r + 2, bone, new Vector3((x - cx) * 0.25f, -0.2f, 1f), 0.2f);
+            }
+        }
+
+        // Shell: a big round body with a lighter dome patch for a shiny look.
+        p.Ellipse(14f, 16f, 12.6f, 9.6f, shell, 1f, 0.25f);
+        p.Ellipse(10f, 12.5f, 4.2f, 2.4f, C(250, 130, 120), 0.5f);
+
+        // Eyes: white with dark pupils, set low so the spikes read as a hairstyle, plus a frown.
+        Color pupil = C(30, 18, 50);
+        p.Ellipse(9.8f, 16f, 3.0f, 3.4f, Color.white, 0.55f, 0.3f);
+        p.Ellipse(18.2f, 16f, 3.0f, 3.4f, Color.white, 0.55f, 0.3f);
+        p.Ellipse(10.8f, 16.8f, 1.5f, 1.9f, pupil, 0.9f, 0.9f);
+        p.Ellipse(19.2f, 16.8f, 1.5f, 1.9f, pupil, 0.9f, 0.9f);
+        for (int i = 0; i <= 5; i++)
+        {
+            int y = 11 + Mathf.RoundToInt(i * 0.45f);
+            p.Rect(6 + i, y, 1, 2, pupil);
+            p.Rect(21 - i, y, 1, 2, pupil);
+        }
+        p.Rect(11, 21, 6, 1, C(70, 24, 60));
+        return p.Bake();
+    }
+
+    // The flying enemy, 28 x 22 pixels: a round magenta bat with two flapping wings, big eyes and tiny fangs.
+    // frame 0 = wings raised, frame 1 = wings lowered. It hovers; there is no foot, the pivot is simply the bottom.
+    static Texture2D Flyer(int frame)
+    {
+        var p = new PixelPainter(28, 22);
+        Color body = C(255, 96, 170), wing = C(168, 56, 150), wingLight = C(214, 100, 190), pupil = C(30, 18, 50);
+
+        // Wings behind the body. A wing is a rounded rectangle plus a darker rib line; raised wings point up and out,
+        // lowered wings point down and out.
+        float wy = frame == 0 ? 1.5f : 8.5f;
+        float tilt = frame == 0 ? -1.5f : 1.5f;
+        p.RoundRect(0.5f, wy + tilt, 10.5f, wy + 8f + tilt, 3f, wing, 0.9f);
+        p.RoundRect(17.5f, wy + tilt, 27.5f, wy + 8f + tilt, 3f, wing, 0.9f);
+        p.RoundRect(2f, wy + tilt + 1.2f, 9f, wy + 3.5f + tilt, 1.2f, wingLight, 0.5f);
+        p.RoundRect(19f, wy + tilt + 1.2f, 26f, wy + 3.5f + tilt, 1.2f, wingLight, 0.5f);
+
+        // Round body, two little ears, eyes and fangs.
+        p.Ellipse(9.2f, 6.8f, 2.0f, 3.2f, body, 0.9f);
+        p.Ellipse(18.8f, 6.8f, 2.0f, 3.2f, body, 0.9f);
+        p.Ellipse(14f, 13f, 8.4f, 7.4f, body, 1f, 0.35f);
+        p.Ellipse(11f, 12f, 2.5f, 3.0f, Color.white, 0.55f, 0.3f);
+        p.Ellipse(17f, 12f, 2.5f, 3.0f, Color.white, 0.55f, 0.3f);
+        p.Ellipse(11.8f, 12.8f, 1.2f, 1.6f, pupil, 0.9f, 0.9f);
+        p.Ellipse(17.8f, 12.8f, 1.2f, 1.6f, pupil, 0.9f, 0.9f);
+        p.Rect(12, 17, 4, 1, C(100, 20, 70));
+        p.Pixel(12, 18, Color.white);
+        p.Pixel(15, 18, Color.white);
+        return p.Bake();
+    }
+
+    // Draws the blaster with its top-left corner at (ox, oy) in the painter's coordinates: a steel body with a glowing
+    // cyan energy cell, a darker barrel with an orange muzzle, and a grip. Faces right.
+    static void GunShapes(PixelPainter p, float ox, float oy)
+    {
+        Color steel = C(160, 170, 210), barrel = C(112, 122, 176), grip = C(76, 82, 120);
+        p.RoundRect(ox + 3f, oy + 5.5f, ox + 6.8f, oy + 9.8f, 1f, grip, 0.8f);
+        p.RoundRect(ox + 1f, oy + 1.5f, ox + 11.5f, oy + 6.5f, 2f, steel, 0.8f, 0.3f);
+        p.RoundRect(ox + 10f, oy + 2.4f, ox + 14.8f, oy + 5.2f, 1f, barrel, 0.7f);
+        p.Rect(Mathf.RoundToInt(ox + 14), Mathf.RoundToInt(oy + 3), 1, 2, C(255, 190, 60));
+        p.Rect(Mathf.RoundToInt(ox + 4), Mathf.RoundToInt(oy + 3), 4, 2, C(90, 240, 255));
+        p.Pixel(Mathf.RoundToInt(ox + 4), Mathf.RoundToInt(oy + 3), Color.white);
+    }
+
+    // The gun alone (15 x 10) or inside a soft cyan aura (25 x 22) for the floating pickup.
+    static Texture2D GunTexture(bool aura)
+    {
+        if (!aura)
+        {
+            var g = new PixelPainter(15, 10);
+            GunShapes(g, 0f, 0f);
+            return g.Bake();
+        }
+        var p = new PixelPainter(25, 22);
+        p.Ellipse(12.5f, 11f, 12.2f, 10.5f, C(90, 220, 255, 60), 0f);
+        p.Ellipse(12.5f, 11f, 9.4f, 8.2f, C(140, 240, 255, 90), 0f);
+        GunShapes(p, 5f, 6f);
+        return p.Bake(false, 0);
+    }
+
+    // A blaster shot, 9 x 5: a cyan orb with a white-hot core and a small trail on the left.
+    static Texture2D BulletTexture()
+    {
+        var p = new PixelPainter(9, 5);
+        p.Ellipse(4.5f, 2.5f, 4.4f, 2.4f, C(70, 220, 255), 0.6f, 0.2f);
+        p.Ellipse(5.6f, 2.5f, 2.3f, 1.4f, Color.white, 0.2f, 0.5f);
         return p.Bake();
     }
 
