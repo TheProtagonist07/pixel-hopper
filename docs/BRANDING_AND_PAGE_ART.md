@@ -15,9 +15,9 @@ In the Unity menu bar: **Tools > Pixel Hopper**
 
 The same menu items can be run from an editor script with `EditorApplication.ExecuteMenuItem("Tools/Pixel Hopper/Generate Branding")`.
 
-**Where files go:** the constant `OutDir` in `CoverArt.cs` points to a folder **outside** the Unity project
-(`~/Claude/ProjectIdeas/IndieGames/pixel-hopper/branding`, and the sibling `page/`), so large images are not imported into the project or committed.
-If you move the folders, change `OutDir`.
+**Where files go:** `OutDir` in `CoverArt.cs` is `marketing/branding` at the project root (next to `Assets`), and page art goes to the sibling `marketing/page`.
+Unity only imports `Assets`, `Packages` and `ProjectSettings`, so these images are not imported into the game, but they live in the same folder and Git repository as the code
+(see [PROJECT_LAYOUT.md](PROJECT_LAYOUT.md)). The path is computed from the project folder, so renaming or moving the project does not break it.
 
 The tool is wrapped in `#if UNITY_EDITOR`, so it is never part of a build.
 

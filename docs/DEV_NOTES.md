@@ -9,7 +9,7 @@ Defined in `Assets/Editor/CoverArt.cs`.
 - **Generate Page Art** — itch page background and the environment banner
 - **Generate Embed Background** — portrait launch screen for itch's "Run game" frame
 
-Outputs go to `~/Claude/ProjectIdeas/IndieGames/pixel-hopper/` (branding/, page/). The itch embed cover must be exactly 540 x 960.
+Outputs go to `marketing/branding/` and `marketing/page/` inside the project. The itch embed cover must be exactly 540 x 960.
 
 ## Testing
 - Editor-only test bot (`AutoPlayer.cs`, compiled only in the editor) plays the stages to check they can be completed. Set `Game.AutoPlay = true` and `Game.DebugStartStage` (from an editor script), then enter Play mode. Re-run after changing physics or level generation.
@@ -19,7 +19,7 @@ Outputs go to `~/Claude/ProjectIdeas/IndieGames/pixel-hopper/` (branding/, page/
 ## Building for WebGL
 1. Switch the build target to WebGL.
 2. WebGL player settings: Gzip compression with decompression fallback, no exception support, hashed file names, Medium code stripping, template `PROJECT:PixelHopper`, splash screen off.
-3. Build to `.../pixel-hopper/build/webgl` and zip `index.html` plus `Build/` into `pixel-hopper-itch.zip` (index.html must be at the zip root).
+3. Build to `builds/vX.Y.Z` (inside the project, not committed) and zip `index.html` plus `Build/` into `builds/pixel-hopper-vX.Y.Z-itch.zip` (index.html must be at the zip root).
 
 Gotchas:
 - Setting build options through a wrapper tool can reset the WebGL template/splash to defaults. Reliable approach: set the template and call `BuildPipeline.BuildPlayer` in the same editor call, then check the built `index.html`.
@@ -41,6 +41,7 @@ Every update has **one focus point**. Work on a branch named `update/<version>-<
 3. Update `CHANGELOG.md` with two lists: **What changed** (player-facing) and **Code changes** (file by file). Update `docs/KNOWN_ISSUES.md`, `docs/ROADMAP.md` and any doc that describes the changed code.
 4. Bump the version (Project Settings > Player > Version, field `bundleVersion`).
 5. Build with `ReleaseBuild.Build` (`docs/WEBGL_BUILD_AND_ITCH.md`), zip with `index.html` at the zip root, play it once in a browser.
-6. Take screenshots of the new things with `ScreenshotTour` (`docs/TESTING.md`, section 2c) and save them in `docs/images/vX.Y.Z/`.
+6. Take screenshots of the new things with `ScreenshotTour` (`docs/TESTING.md`, section 2c) and save them in `marketing/screenshots/vX.Y.Z/`.
 7. Commit on the branch, merge into `main`, tag `vX.Y.Z`, push `main` and the tag.
-8. On itch.io upload the zip to the same file slot and paste the update note (text in `docs/itch-page-copy.md`).
+8. Attach the zip to a GitHub Release for the tag (`gh release create vX.Y.Z builds/pixel-hopper-vX.Y.Z-itch.zip --title "vX.Y.Z" --notes-file release-notes.md`), so there is an off-machine copy of every build.
+9. On itch.io upload the zip to the same file slot and paste the update note (text in `docs/itch-page-copy.md`).

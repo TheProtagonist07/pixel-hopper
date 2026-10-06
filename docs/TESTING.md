@@ -117,10 +117,10 @@ left wall), waits for the game to react and captures the frame, UI included. Unl
 
 ```bash
 $UNITY -projectPath ~/pixel-hopper -executeMethod ScreenshotTour.Run -shotsOut /tmp/shots -logFile /tmp/shots.log
-python3 tools/crop_shots.py /tmp/shots docs/images/vX.Y.Z --width 720    # removes the black bars, saves 720 x 1280 PNGs
+python3 tools/crop_shots.py /tmp/shots marketing/screenshots/vX.Y.Z --width 720    # removes the black bars, saves 720 x 1280 PNGs
 ```
 
-Edit the `Tour` method to photograph different situations. Reference the images from the changelog entry (`docs/images/vX.Y.Z/`) and attach them to the itch.io update post.
+Edit the `Tour` method to photograph different situations. Reference the images from the changelog entry (`marketing/screenshots/vX.Y.Z/`) and attach them to the itch.io update post.
 
 ## 3. Manual test checklist
 
