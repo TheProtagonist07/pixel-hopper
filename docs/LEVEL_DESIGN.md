@@ -17,6 +17,7 @@ camera's view height, so the camera never scrolls vertically.
 | `c` | coin | `Coin` object |
 | `^` | spikes | `Hazard` object |
 | `e` | enemy start (feet at the bottom of the cell) | `Enemy` object |
+| `h` | bonus heart (one extra life, at most 5 lives) | `HeartPickup` object |
 
 Start and exit are stored separately as tile positions. Ground is 3 tiles thick (rows 0 to 2), so the walking surface is row 3
 (`Surface`).
@@ -34,6 +35,7 @@ Build(stage):
   repeat (5 + stage) times:
       pick a chunk type unlocked at this stage
       stage 1 only: chunk 3 is always an enemy chunk (one slow enemy)
+      stage 2+: a heart rest area before chunk number (chunks / 2); stage 6+: another before chunk 3/4 of the way
       after 3 non-flat chunks in a row, force a flat "breather"
       avoid the same hazard twice in a row (up to 3 re-rolls)
       emit the chunk, advance x
@@ -56,6 +58,7 @@ Legend in the pictures: `#` ground, `_` pit, `^` spikes, `B` brick, `e` enemy, `
 | Stairs | up 1-2(-3), plateau of 3, down | stage 3 | 2 steps; 3 steps from stage 6 |
 | Platform | floating 3-wide brick over ground | stage 4 | low (1 above surface) before stage 5, then 2 above; an enemy patrols below from stage 6 |
 | Stone gap | `###___BBB__###` | stage 5 | 3-wide pit, floating stone level with the ground, then 2-3 pit |
+| Heart rest | `#########` with coins and a heart | inserted, never random | 9 flat tiles with a heart in the middle. Inserted by the generator in the middle of stages 2 to 10 and again at three quarters of stages 6 to 10. It uses no random numbers, so other chunks are unaffected |
 | Gap landing | `###___########e` | stage 6 | 3-wide pit then an enemy waiting at the far end |
 | Spike run | `###^^####^^###` | stage 7 | two spike fields 4 tiles apart; land between and jump again |
 | Gauntlet | `###^^##e##^^###` | stage 8 | spikes, patrolling enemy, spikes |

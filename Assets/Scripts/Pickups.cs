@@ -91,17 +91,63 @@ public class LevelExit : MonoBehaviour
         sr.sprite = PixelArt.Flag;
         sr.sortingOrder = 1;
 
-        // The flag sprite is 3 tiles tall (pivot at its base), so the trigger is a 1 x 3 box
-        // starting at the ground: touching any part of the pole counts.
+        // The flag sprite is 3 tiles tall (pivot at its base), but the trigger is a tall 1 x 8 line from the ground up.
+        // A full jump reaches about 3.8 tiles, so a trigger as short as the pole could be jumped clean over
+        // without finishing the stage (found after release 1.0.2). Like the goal line in classic platformers,
+        // crossing the flag's column at any height now counts.
         var c = gameObject.AddComponent<BoxCollider2D>();
         c.isTrigger = true;
-        c.size = new Vector2(1f, 3f);
-        c.offset = new Vector2(0f, 1.5f);
+        c.size = new Vector2(1f, 8f);
+        c.offset = new Vector2(0f, 4f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.TryGetComponent(out PlayerController _))
             Game.Instance.LevelComplete();
+    }
+}
+
+/// <summary>
+/// A bonus heart placed inside a stage. Touching it gives the player one extra life, up to the maximum of 5.
+/// If the player is already at the maximum the heart stays where it is (it is not wasted). It bobs and pulses like a
+/// coin so it reads as a collectible, and its sprite is the same heart used in the HUD.
+/// </summary>
+public class HeartPickup : MonoBehaviour
+{
+    Vector3 basePosition;
+    float phase;
+
+    void Awake()
+    {
+        var sr = gameObject.AddComponent<SpriteRenderer>();
+        sr.sprite = PixelArt.Heart;
+        sr.sortingOrder = 1; // behind enemies (2) and the player (3), like coins
+
+        var c = gameObject.AddComponent<CircleCollider2D>();
+        c.isTrigger = true;
+        c.radius = 0.45f;
+
+        phase = Random.value * Mathf.PI * 2f;
+    }
+
+    // The position is assigned by Game after AddComponent but before the first frame, so read it in Start.
+    void Start() => basePosition = transform.position;
+
+    void Update()
+    {
+        // Bob 0.1 units and pulse the size by 10% (about twice a second) so it looks like a beating heart.
+        transform.position = basePosition + Vector3.up * (Mathf.Sin(Time.time * 3f + phase) * 0.1f);
+        float pulse = 1.15f + 0.1f * Mathf.Sin(Time.time * 7f + phase);
+        transform.localScale = new Vector3(pulse, pulse, 1f);
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!other.TryGetComponent(out PlayerController _)) return;
+        if (!Game.Instance.AddLife()) return; // already at the maximum: leave the heart for later
+        Fx.Burst(transform.position, new Color(1f, 0.4f, 0.5f, 1f), 12, 4f, 0.5f, 2f, 0.14f);
+        Fx.Burst(transform.position, Color.white, 4, 2.5f, 0.3f, 0f, 0.1f);
+        Destroy(gameObject);
     }
 }

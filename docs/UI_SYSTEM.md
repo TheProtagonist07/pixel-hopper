@@ -83,11 +83,11 @@ world. Routing the UI through a normal canvas uses the standard colour pipeline,
 
 | Screen | Drawn by | Notes |
 |---|---|---|
-| Title | `DrawTitle` | Logo bobs with a sine wave; hero, enemy and coins animate with `Time.unscaledTime`; start prompt blinks twice per second |
+| Title | `DrawTitle` | Prompt "CLICK OR PRESS SPACE TO START" (tap on touch). Logo bobs with a sine wave; hero, enemy and coins animate with `Time.unscaledTime`; start prompt blinks twice per second |
 | HUD | `DrawHud` | Hearts (lives) left, `STAGE n/10` centre, spinning coin and total right |
 | Stage banner | `DrawStateOverlay` | `STAGE n` and the world name for 2.2 s |
-| Stage clear | `DrawStateOverlay` | Panel with coins `x / y` |
-| Game over / You win | `DrawStateOverlay` | Panel with a blinking prompt |
+| Stage clear | `DrawStateOverlay` | Panel with coins `x / y` and "+1 HEART!" (or "HEARTS FULL") |
+| Game over / You win | `DrawStateOverlay` | Panel with a blinking prompt; game over says "YOU START OVER AT STAGE 1" |
 | Help dialog | `DrawHelp` | Key caps, icons, six rows, SKIP and OK buttons |
 | Touch buttons | `DrawTouchButtons` | Translucent left, right and JUMP hints (only after a real touch, or on mobile) |
 

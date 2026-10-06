@@ -57,7 +57,7 @@ $UNITY -batchmode -nographics -projectPath ~/pixel-hopper -executeMethod BatchBo
 
 ### Stage report (`BatchBot.Report`)
 
-Prints one line per stage: width in tiles and how many coins, enemies and spike tiles it has. It does not enter Play mode, so it takes a few seconds.
+Prints one line per stage: width in tiles and how many coins, enemies, spike tiles and bonus hearts it has. It does not enter Play mode, so it takes a few seconds.
 Run it **before and after** any change to `Levels.cs` and compare the two outputs; that shows exactly which stages a change touched.
 
 ```bash
@@ -66,6 +66,23 @@ cat /tmp/report.txt
 ```
 
 Example (v1.0.1): `stage  1: width= 67 coins= 24 enemies= 1 spikes= 0 enemySpeed=1.50`.
+
+### Rule checks (`BatchChecks`)
+
+`Assets/Editor/BatchChecks.cs` checks game **rules** automatically: it creates a situation (teleports the player, calls the same methods the game calls), waits for the real code
+to react, and tests the result. Close the project in Unity first, then:
+
+```bash
+$UNITY -batchmode -nographics -projectPath ~/pixel-hopper -executeMethod BatchChecks.Run -checksOut /tmp/checks.txt -logFile /tmp/checks.log
+cat /tmp/checks.txt        # one PASS or FAIL line per check, then CHECKS RESULT
+```
+
+Checks in v1.1.0: jumping over the flag pole finishes the stage, the camera does not scroll back and the left screen edge blocks the player, three deaths end the run and restart at
+stage 1 with 3 lives, lives carry between stages and a cleared stage gives a heart, a heart pickup gives a life and is left alone at 5 lives. A run takes about two minutes.
+
+**Proving a fix:** a good check fails on the old code and passes on the new code. To see it, temporarily put the old versions of the gameplay scripts back
+(`git stash push -- Assets/Scripts/...`, run the checks, `git stash pop`). This is how the v1.1.0 fixes were verified (5 checks failed before, all passed after).
+To add a check, add a block to `BatchChecks.Checks` that ends with `Report(name, passed, detail)`.
 
 ## 2. Screenshot and video helpers
 
@@ -81,7 +98,7 @@ The image has black bars if the game view is wider than 9:16; crop them afterwar
 
 `Game` has shortcuts for reaching specific screens quickly (editor only): `DebugStage(index)`, `DebugClear()`, `DebugOver()`, `DebugWon()`, `DebugBegin()`.
 
-## 2b. Testing the focus hint (and any web template change) without publishing
+## 2b. Testing a web template change in an itch.io-style iframe, without publishing
 
 The itch.io page runs the game in a cross-origin iframe that is created after the player clicks "Run game". A template change can be tested locally
 with a stand-in page, no upload needed:
@@ -89,8 +106,8 @@ with a stand-in page, no upload needed:
 1. Serve the built game folder on one port and a small wrapper page on another (different ports count as different origins):
    `cd build/v1.0.2 && python3 -m http.server 8099` and, in another terminal, a wrapper `index.html` with a "Run game" button that creates
    `<iframe src="http://localhost:8099/index.html">` when clicked.
-2. Open the wrapper, click "Run game", wait for the game, then click the wrapper page outside the game. The yellow hint should appear.
-3. Click the game. The hint should disappear and, on the title screen, the click starts the game.
+2. Open the wrapper, click "Run game", wait for the game, and check the change there (loading screen, input, console errors).
+3. Click the game: on the title screen the click starts it.
 
 ## 3. Manual test checklist
 
@@ -107,7 +124,10 @@ Run before every release, on **desktop browser and a real phone** (the iPhone so
 | Hazards | Spikes hurt; falling into a pit costs a life; respawn blinks for 2 s |
 | Coins | Collected with sound; HUD total and stage-clear `x / y` agree |
 | Flag | Stage clear panel, then the next stage loads automatically |
-| Game over | After 3 lives: panel, tap retries the same stage with the coin total it started with |
+| Lives | Start with 3 hearts; they carry between stages, +1 on each stage clear (max 5), bonus hearts in stages 2 to 10 add 1 (a heart is left alone at 5) |
+| Game over | After the third life is lost: panel "YOU START OVER AT STAGE 1", tap restarts at stage 1 with 3 lives and 0 coins |
+| Camera | The screen never scrolls back; the hero cannot walk past the left edge of the screen; after losing a life the camera returns to the start |
+| Flag | Jumping high over the flag pole still completes the stage |
 | Win | After stage 10: win screen, tap restarts at stage 1 |
 | Audio | Music starts at first interaction, `M` mutes, effects play (iPhone: silent switch off) |
 | Layout | Resize the window: 9:16 view stays centred; text never overflows its panel |

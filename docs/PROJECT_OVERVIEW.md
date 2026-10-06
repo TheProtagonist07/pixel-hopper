@@ -31,7 +31,7 @@ about 11 MB (mostly the Unity engine itself; the game's own data is tiny).
 | Stage length | 6 chunks in stage 1 growing to 15 chunks in stage 10 (about 220 tiles) |
 | Enemy types | 1 (purple blob), speed rises per stage |
 | Hazards | Spikes and pits |
-| Lives | 3 per stage; game over retries the same stage |
+| Lives | 3 per run (max 5), +1 per cleared stage, bonus hearts in stages; game over restarts at stage 1 |
 | Controls | Keyboard, gamepad and touch |
 | Audio | 9 synthesised sound effects + a 6-second looping tune |
 | Imported assets | None (no textures, audio, fonts, models) |
@@ -58,7 +58,7 @@ about 11 MB (mostly the Unity engine itself; the game's own data is tiny).
 2. **Title screen**: bobbing 3D logo, hero and enemy mascots, "press space / tap to start".
 3. **Help dialog** (first time only): controls and goals, with OK and SKIP buttons.
 4. **Stages 1 to 10**: banner with the stage name, play, flag, short celebration, next stage.
-5. **Game over** (out of lives): tap to retry the same stage.
+5. **Game over** (out of lives): tap to start over at stage 1.
 6. **You win** (after stage 10): coin total, tap to play again.
 
 ## How the project is organised
