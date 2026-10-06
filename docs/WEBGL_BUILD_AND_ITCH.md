@@ -26,6 +26,7 @@ Unity copies `Assets/WebGLTemplates/PixelHopper/index.html` to the build and fil
 - Creates the game on a full-window canvas with `image-rendering: pixelated`.
 - Blocks page scrolling (Space and arrow keys), the context menu, text selection, pinch zoom and pull-to-refresh, so it feels like an app.
 - Focuses the canvas on any click or tap so keyboard input works.
+- Shows a yellow "CLICK THE GAME TO PLAY" hint whenever the page does not have keyboard focus (see known issue KI-004), and hides it when the player clicks.
 - Caps the device pixel ratio at 2 (phones report 3, which costs speed for no visible gain with pixel art).
 - Shows a red error strip if Unity reports an error or fails to start.
 
@@ -75,7 +76,7 @@ Manual steps, if you prefer the editor:
 |---|---|
 | Kind of project | HTML |
 | Upload | The zip, marked "This file will be played in the browser" |
-| Embed options | Click-to-launch, **viewport 540 x 960** (see KI-002: tall for laptops; 405 x 720 is the same shape), fullscreen button on, mobile friendly on, autostart off |
+| Embed options | Click-to-launch, **viewport 405 x 720** (same 9:16 shape as the old 540 x 960, 25% smaller so it fits most laptops; see KI-002), fullscreen button on, mobile friendly on, autostart off |
 | Visibility | Public once happy (it was set to Draft first) |
 | Page theme | Background `#130a28`, secondary background `#1c0f3d`, text `#ece6ff`, link `#ffd84a`; background image set to the generated page background, no repeat, top centre |
 | Banner | The generated environment banner |
@@ -102,5 +103,5 @@ Page text, tags and descriptions: [itch-page-copy.md](itch-page-copy.md).
 | Issue | Where documented |
 |---|---|
 | No sound on iPhone when the silent switch is on | KI-001. Optional fix: `navigator.audioSession.type = 'playback'` in the template |
-| Embed frame taller than many laptop screens | KI-002 |
-| First Space press ignored until the canvas has focus | KI-004 |
+| Embed frame taller than many laptop screens (use viewport 405 x 720) | KI-002 |
+| First Space press ignored until the page has focus (hint added in v1.0.2) | KI-004 |

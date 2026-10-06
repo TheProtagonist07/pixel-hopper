@@ -7,9 +7,9 @@ Status: **Open**, **Planned** (scheduled), **Fixed (vX.Y.Z)**, **Won't fix**.
 | ID | Issue | Severity | Status | Notes / fix |
 |---|---|---|---|---|
 | KI-001 | No sound on iPhone when the silent switch is on | Low | Open | Not a bug, iOS mutes web audio in silent mode. Optional fix: set `navigator.audioSession.type = 'playback'` in `Assets/WebGLTemplates/PixelHopper/index.html`, rebuild, re-upload. Mention in the itch description meanwhile. |
-| KI-002 | Embed frame (540 x 960) is taller than many laptop screens, so the lower part of the game is below the fold | Medium | Open | itch setting: use "Click to launch in fullscreen" if offered, or lower the viewport to 405 x 720 (same 9:16 shape). |
+| KI-002 | Embed frame (540 x 960) is taller than many laptop screens, so the lower part of the game is below the fold | Medium | Fix ready (v1.0.2) | itch.io page setting: embed viewport **405 x 720** (same 9:16 shape). Not code. Mark Fixed once applied. Laptops with a 768 px screen still need the fullscreen button. |
 | KI-003 | Description typo: "3 lives per stage , instant retry" (stray space) | Trivial | Open | Edit the itch page text. |
-| KI-004 | First Space press can be ignored until the game canvas has keyboard focus | Low | Open | Players click first; consider showing "Click to focus" hint. |
+| KI-004 | First Space press can be ignored until the game has keyboard focus (itch.io embed) | Low | Fixed (v1.0.2) | Page template shows "CLICK THE GAME TO PLAY" while the game does not have focus. Could not be reproduced in the test browser; confirm on itch.io after upload. |
 | KI-005 | Stage 10 is hard (test bot needed 6 deaths); other stages are fine | Design | Planned | Wait for player feedback, then tune chunk mix or lives. |
 | KI-006 | Enemies at stage 1 are absent by design, so the first stage may feel empty | Design | Fixed (v1.0.1) | Stage 1 now has one slow enemy as its third section (`Levels.Build`). |
 
