@@ -100,7 +100,7 @@ public static class ScreenshotTour
         yield return 0.6f;
         SetLives(2);
         var player = game.Player;
-        var heart = Object.FindFirstObjectByType<HeartPickup>();
+        var heart = Object.FindAnyObjectByType<HeartPickup>();
         Teleport(player, new Vector2(heart.transform.position.x - 2.2f, 3.05f));
         player.Freeze(); // keep the hero still and safe while the camera catches up
         yield return 1.6f;

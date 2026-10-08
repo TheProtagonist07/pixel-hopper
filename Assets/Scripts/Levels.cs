@@ -290,7 +290,7 @@ public static class Levels
         // Fixed seed per stage => the same stage every time. 977 spreads the seeds so neighbouring stages differ.
         var rng = new System.Random(7001 + index * 977);
 
-        // Allocate far more width than ever needed (stage 10 is about 220 tiles); Crop trims it at the end.
+        // Allocate far more width than ever needed (stage 10 is about 200 tiles); Crop trims it at the end.
         var g = new LevelGrid(600, GridHeight)
         {
             Theme = Themes[index],
