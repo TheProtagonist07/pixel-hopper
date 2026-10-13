@@ -1,8 +1,17 @@
 # Pixel Hopper
 
+![Unity](https://img.shields.io/badge/Unity-6-black?logo=unity) ![Platform](https://img.shields.io/badge/WebGL%20%7C%20Desktop%20%7C%20Mobile-blue) ![Play](https://img.shields.io/badge/itch.io-free-fa5c5c?logo=itchdotio) ![License](https://img.shields.io/badge/license-All%20rights%20reserved-lightgrey)
+
 A tiny portrait pixel platformer in 10 stages. Stomp enemies, dodge spikes and pits, grab coins, reach the flag.
 
 **Play it:** https://the-protagonist07.itch.io/pixel-hopper
+
+<p align="center">
+  <img src="marketing/screenshots/v1.1.0/01_title.png" width="22%" alt="Title screen">
+  <img src="marketing/screenshots/v1.1.0/02_bonus_heart.png" width="22%" alt="Collecting a bonus heart">
+  <img src="marketing/screenshots/v1.1.0/04_stage_clear_heart.png" width="22%" alt="Stage clear">
+  <img src="marketing/screenshots/v1.1.0/05_game_over.png" width="22%" alt="Game over">
+</p>
 
 - Unity 6 (6000.6), URP, new Input System, 2D physics
 - Portrait 9:16 with a narrow view and camera look-ahead
@@ -67,4 +76,5 @@ Start with [docs/README.md](docs/README.md), the index with reading paths.
 ## Credits
 Made with Unity. All art, music and sound effects are generated in code.
 
-License: not chosen yet.
+## License
+All rights reserved, see [LICENSE](LICENSE). The game is free to play on itch.io; the source is shown for reference and is not licensed for reuse.
