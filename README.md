@@ -1,10 +1,10 @@
 # Pixel Hopper
 
-![Unity](https://img.shields.io/badge/Unity-6-black?logo=unity) ![Platform](https://img.shields.io/badge/WebGL%20%7C%20Desktop%20%7C%20Mobile-blue) ![Play](https://img.shields.io/badge/itch.io-free-fa5c5c?logo=itchdotio) ![License](https://img.shields.io/badge/license-MIT-green)
+![Unity](https://img.shields.io/badge/Unity-6-black?logo=unity) ![Platform](https://img.shields.io/badge/WebGL%20%7C%20Desktop%20%7C%20Mobile-blue) [![Play on itch.io](https://img.shields.io/badge/Play%20free-itch.io-fa5c5c?logo=itchdotio&logoColor=white)](https://the-protagonist07.itch.io/pixel-hopper) ![License](https://img.shields.io/badge/license-MIT-green)
 
 A tiny portrait pixel platformer in 10 stages. Stomp enemies, dodge spikes and pits, grab coins, reach the flag.
 
-**Play it:** https://the-protagonist07.itch.io/pixel-hopper
+**Play it free in your browser:** https://the-protagonist07.itch.io/pixel-hopper
 
 <p align="center">
   <img src="marketing/screenshots/v1.1.0/01_title.png" width="22%" alt="Title screen">
