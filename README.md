@@ -1,6 +1,6 @@
 # Pixel Hopper
 
-![Unity](https://img.shields.io/badge/Unity-6-black?logo=unity) ![Platform](https://img.shields.io/badge/WebGL%20%7C%20Desktop%20%7C%20Mobile-blue) ![Play](https://img.shields.io/badge/itch.io-free-fa5c5c?logo=itchdotio) ![License](https://img.shields.io/badge/license-All%20rights%20reserved-lightgrey)
+![Unity](https://img.shields.io/badge/Unity-6-black?logo=unity) ![Platform](https://img.shields.io/badge/WebGL%20%7C%20Desktop%20%7C%20Mobile-blue) ![Play](https://img.shields.io/badge/itch.io-free-fa5c5c?logo=itchdotio) ![License](https://img.shields.io/badge/license-MIT-green)
 
 A tiny portrait pixel platformer in 10 stages. Stomp enemies, dodge spikes and pits, grab coins, reach the flag.
 
@@ -77,4 +77,4 @@ Start with [docs/README.md](docs/README.md), the index with reading paths.
 Made with Unity. All art, music and sound effects are generated in code.
 
 ## License
-All rights reserved, see [LICENSE](LICENSE). The game is free to play on itch.io; the source is shown for reference and is not licensed for reuse.
+[MIT](LICENSE) © 2026 Shivam Chaurasia. The game is free to play on itch.io, and the code is open source. All art, music and sound effects are generated in code, so there are no third-party assets to attribute.
