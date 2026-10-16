@@ -7,7 +7,7 @@ so they can be regenerated after any art change.
 |---|---|
 | `branding/` | `logo.png` (transparent), `cover_630x500.png` (itch cover), `icon_512.png` |
 | `page/` | `page_background_2560x1100.png`, `banner_environment_1920x420.png`, `embed_cover_540x960.png` (launch screen behind "Run game") |
-| `promo/` | `pixel-hopper-clip.mp4` and `.gif` (promo clip for social posts) |
+| `promo/` | `pixel-hopper-clip-v1.1.0.mp4` (16 s, 540x960: stomp, bonus heart, flag) and `.gif` (270x480) for social posts; `pixel-hopper-clip.mp4` and `.gif` are the older first-release clip, kept as a spare |
 | `screenshots/` | `v1.0.0-polish/` (look of the first release) and `vX.Y.Z/` for each update (made by `ScreenshotTour`, see [docs/TESTING.md](../docs/TESTING.md)) |
 
 ## Brand
@@ -23,6 +23,6 @@ so they can be regenerated after any art change.
 - A suggested time for a first social push is a Saturday (#screenshotsaturday on X), after a few updates.
 
 ## For each update
-1. Take screenshots: `ScreenshotTour` then `tools/crop_shots.py` into `screenshots/vX.Y.Z/`.
+1. Take screenshots: `ScreenshotTour` then `tools/crop_shots.py` into `screenshots/vX.Y.Z/`. For a new promo clip use `ClipRecorder` then `tools/make_clip.py` ([docs/TESTING.md](../docs/TESTING.md), section 2d).
 2. Paste the update note from [docs/itch-page-copy.md](../docs/itch-page-copy.md) into an itch.io devlog post and attach 3 to 4 of the screenshots.
 3. Add a row to [management/release-log.md](../management/release-log.md).

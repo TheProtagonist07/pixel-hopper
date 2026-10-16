@@ -122,6 +122,23 @@ python3 tools/crop_shots.py /tmp/shots marketing/screenshots/vX.Y.Z --width 720 
 
 Edit the `Tour` method to photograph different situations. Reference the images from the changelog entry (`marketing/screenshots/vX.Y.Z/`) and attach them to the itch.io update post.
 
+## 2d. Recording a promo clip (`ClipRecorder`, `ClipBot`)
+
+`Assets/Editor/ClipRecorder.cs` records a video of one stage with a scripted player and keeps a take in which the hero stomps the enemy, picks up a bonus heart and clears the stage.
+`Assets/Scripts/ClipBot.cs` (editor only) is that scripted player: it runs and jumps like the test bot, but it predicts where an enemy will be when a jump comes down and jumps so that the hero **lands on it**
+(the test bot jumps over enemies, which does not make a good clip). `ClipCapture` (same file) saves every frame; `Time.captureFramerate` fixes the game clock at 30 frames per second, so the video is smooth even if saving a frame is slow.
+It needs a window, so start it **without** `-batchmode` (the project must not already be open; the editor opens for about a minute and quits by itself):
+
+```bash
+$UNITY -projectPath ~/pixel-hopper -executeMethod ClipRecorder.Run -clipOut /tmp/clip -clipStage 1 -logFile /tmp/clip.log
+cat /tmp/clip/result.txt      # one line per take, then "CLIP RESULT: OK"
+python3 tools/make_clip.py /tmp/clip/frames marketing/promo/pixel-hopper-clip-vX.Y.Z   # writes .mp4 (540x960) and a small .gif
+```
+
+`-clipStage` is the stage index (1 = stage 2, which has an enemy and a bonus heart), `-clipFps` and `-clipSuper` (default 30 and 2) set the frame rate and the resolution multiplier.
+A take is deterministic, so if the stomp misses, the recorder retries with a slightly different landing-time guess (up to 5 takes). Always **look at the footage** (a contact sheet of frames is enough) before using it.
+The clip is real gameplay, but the player is a script. Say so if anyone asks.
+
 ## 3. Manual test checklist
 
 Run before every release, on **desktop browser and a real phone** (the iPhone sound issue was only found this way).
