@@ -4,6 +4,7 @@ All notable changes to Pixel Hopper. Newest first. Update this file with every f
 
 ## [Unreleased]
 ### Housekeeping (no change for players)
+- Marketing: new promo clip `marketing/promo/pixel-hopper-clip-v1.1.0.mp4` and `.gif` (16 s of stage 2 with an enemy stomp, a bonus heart and the flag), recorded from the current game by new editor-only tools: `ClipRecorder` (`Assets/Editor`), `ClipBot` (`Assets/Scripts`, editor only) and `tools/make_clip.py`. No change to the game itself.
 - Docs: corrected script and line counts, the length of stage 10 (about 200 tiles), the per-file line counts in `docs/SCRIPTS.md`, and the v1.0.2 itch note (v1.0.2 was never published on its own).
 - Code comment in `Levels.cs`: stage 10 length (about 200 tiles). No code changed.
 - `BatchChecks.cs` and `ScreenshotTour.cs` use `FindAnyObjectByType` instead of the deprecated `FindFirstObjectByType` (removes 5 compiler warnings in the editor tools).

@@ -45,7 +45,7 @@ A tiny portrait pixel platformer in 10 stages. Stomp enemies, dodge spikes and p
 | `management/` | How the project is run, release log, status ([management/README.md](management/README.md)) |
 | `sales/` | Traction and store plans, metrics log ([sales/README.md](sales/README.md)) |
 | `builds/` | WebGL builds and itch.io zips per version (not committed; zips are attached to GitHub Releases) |
-| `tools/` | Helper scripts (`verify_comment_only.py`, `crop_shots.py`) |
+| `tools/` | Helper scripts (`verify_comment_only.py`, `crop_shots.py`, `make_clip.py`) |
 
 Everything about the project lives in this one folder and one repository; see [docs/PROJECT_LAYOUT.md](docs/PROJECT_LAYOUT.md).
 

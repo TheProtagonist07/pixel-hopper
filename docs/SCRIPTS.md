@@ -24,6 +24,8 @@ lines inline, so this page is the map and the scripts are the detail.
 | [Editor/ReleaseBuild.cs](#editorreleasebuildcs-editor-only) | 70 | Editor-only: builds the WebGL release with the correct settings |
 | [Editor/BatchChecks.cs](#editorbatchcheckscs-editor-only) | 220 | Editor-only: automated checks of the game rules (flag, camera, lives, hearts) |
 | [Editor/ScreenshotTour.cs](#editorscreenshottourcs-editor-only) | 160 | Editor-only: takes the update-post screenshots from the real game |
+| [ClipBot.cs](#clipbotcs-editor-only) | 110 | Editor-only: scripted player that stomps an enemy, and the frame saver for promo clips |
+| [Editor/ClipRecorder.cs](#editorcliprecordercs-editor-only) | 130 | Editor-only: records a promo clip of one stage |
 | [WebGLTemplates/PixelHopper/index.html](#webgltemplatespixelhopperindexhtml) | 120 | Web page that hosts the game |
 
 ---
@@ -150,6 +152,13 @@ Reads private game state with reflection, so the same checks run on an older ver
 ## Editor/ScreenshotTour.cs (editor only)
 Opens the game in a windowed editor, puts it in a series of situations (title, heart pickup, stage clear, game over, left wall) and captures each with `DebugShot`
 ([TESTING.md](TESTING.md), section 2c). `tools/crop_shots.py` then removes the black bars around the 9:16 view.
+
+## ClipBot.cs (editor only)
+`ClipBot` is a scripted player for promo footage: it runs right, jumps at ledges, walls and spikes, and jumps at enemies at the moment that makes the hero land on top of them (it predicts the enemy's position `landingTime` seconds ahead).
+`ClipCapture` saves every rendered frame as a numbered PNG while `Time.captureFramerate` fixes the game clock. Used by `ClipRecorder`; see [TESTING.md](TESTING.md), section 2d.
+
+## Editor/ClipRecorder.cs (editor only)
+Opens the game in a windowed editor, plays one stage with `ClipBot`, captures the frames, and keeps the first take in which the stage was cleared, the bonus heart was taken and the enemy was stomped (up to 5 takes with different landing-time guesses). `tools/make_clip.py` turns the frames into an MP4 and a GIF.
 
 ## Editor/ReleaseBuild.cs (editor only)
 Applies the WebGL release settings (template, no splash, gzip with decompression fallback, no exceptions, hashed file names, medium stripping) and calls
